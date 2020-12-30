@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跳蚤注册</title>
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.11/lib/index.css" />
+
+    <!-- 引入 Vue 和 Vant 的 JS 文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vant@2.11/lib/vant.min.js"></script>
+    <!-- 引入axios的JS文件 -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- 引入qs的js文件 -->
+    <script src="https://cdn.bootcss.com/qs/6.7.0/qs.min.js"></script>
+    <!-- 这里引入外部文件的字体图标样式 -->
+    <link rel="stylesheet" href="../css/iconfont.css" />
+    <style type="text/css">
+        #app img {
+            display: block;
+            width: 10rem;
+            height: 10rem;
+            margin: 1.5rem auto 2rem;
+        }
+
+        #app .footer {
+            width: 100%;
+            height: 15rem;
+            background-image: url("../src/footer.jpg");
+            background-size: cover;
+        }
+
+        form {
+            width: 90%;
+            margin: 0 auto;
+        }
+
+        form .userinfo {
+            margin-bottom: 1rem;
+        }
+
+        form .btns {
+            margin-top: 1rem;
+            margin-bottom: 1.3rem;
+        }
+
+        form .loginbtn {
+            margin-bottom: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <img src="../src/flea.jpg" alt="图标">
+        <form>
+            <div class="userinfo">
+                <van-cell-group>
+                    <van-field v-model="name" type="text" label="&#xe66b;昵称" placeholder="请输入昵称" required size="large"
+                        input-align="center" label-align="center" label-class="iconfont" clearable
+                        :error-message="nameErrorMsg" :error="ifNameEmpty" />
+                </van-cell-group>
+                <van-cell-group>
+                    <van-field v-model="id" type="text" label="&#xe621;账号" placeholder="请输入账号" required size="large"
+                        input-align="center" label-align="center" label-class="iconfont" clearable
+                        :error-message="idErrorMsg" :error="ifIdEmpty" />
+                </van-cell-group>
+                <van-cell-group>
+                    <van-field v-model="password" type="password" label="&#xe65e;密码" placeholder="请输入密码" required
+                        size="large" input-align="center" label-align="center" label-class="iconfont" clearable
+                        :error-message="passwordErrorMsg" :error="ifPasswordEmpty" />
+                </van-cell-group>
+            </div>
+            <div class="btns">
+                <div class="loginbtn">
+                    <van-button round type="primary" block @click.prevent="register">注册</van-button>
+                </div>
+                <div class="registerbtn">
+                    <van-button round type="info" block @click.prevent="backToLogin">返回</van-button>
+                </div>
+            </div>
+        </form>
+        <div class="footer"></div>
+    </div>
+</body>
+<script>
+    // 在 #app 标签下渲染一个按钮组件
+    let vm = new Vue({
+        el: '#app',
+        data: {
+            name: "",
+            id: "",
+            password: "",
+            nameErrorMsg: "",
+            idErrorMsg: "",
+            passwordErrorMsg: "",
+            ifNameEmpty: false,
+            ifIdEmpty: false,
+            ifPasswordEmpty: false
+        },
+        methods: {
+            backToLogin: function () {
+                window.location.href = "./login.html";
+            },
+            register: function () {
+                console.log(this.name, this.id, this.password);
+                // 如果输入内容为空则红色字体提示用户
+                if (this.name === "") {
+                    this.ifNameEmpty = true;
+                }
+                else if (this.id === "") {
+                    this.ifIdEmpty = true;
+                }
+                else if (this.password === "") {
+                    this.ifPasswordEmpty = true;
+                }
+                else {
+                    axios.post("http://localhost:5502/userRegister", Qs.stringify({
+                        user: {
+                            id: this.id,
+                            name: this.name,
+                            password: this.password,
+                            headurl: "https://pic1.zhimg.com/80/v2-9662dad305a49b108d678fdb6aeeaacc_720w.jpg",
+                            sign: ""
+                        },
+                        shopcar: [
+                            {
+                                good: "",
+                                info: "",
+                                prize: "",
+                                imgurl: "",
+                                count: ""
+                            }
+                        ],
+                        history: [
+                            {
+                                good: "",
+                                info: "",
+                                prize: "",
+                                imgurl: "",
+                                time: ""
+                            }
+                        ],
+                        support: "0",
+                        attention: "0",
+                        fan: "0",
+                        city: "成都"
+                    }))
+                        .then(function (response) {
+                            console.log(response.data);
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                }
+            }
+        }
+    });
+</script>
+
+</html>
