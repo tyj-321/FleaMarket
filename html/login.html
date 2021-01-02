@@ -101,8 +101,10 @@
             id: "",
             password: "",
             radio: "",
+            // 错误信息
             idErrorMsg: "",
             passwordErrorMsg: "",
+            // 输入为空的时候显示红体字
             ifIdEmpty: false,
             ifPasswordEmpty: false
         },
@@ -112,6 +114,10 @@
             },
             loginCheck: function () {
                 console.log(this.id, this.password);
+                vant.Toast.loading({
+                    message: '正在登录...',
+                    forbidClick: true,
+                });
                 // 如果输入为空则显示红色字体提示
                 if (this.id === "") {
                     this.ifIdEmpty = true;
@@ -128,6 +134,7 @@
                             let password = userInfo[i].user.password;
                             // 如果用户信息核对正确就可以跳转到跳蚤市场界面了
                             if (this.id === id && this.password === password) {
+                                vant.Toast.clear;
                                 window.location.href = "./groud.html";
                                 break;
                             }

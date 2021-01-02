@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,9 +16,98 @@
     <!-- 这里引入外部文件的字体图标样式 -->
     <link rel="stylesheet" href="../css/iconfont.css" />
 </head>
+
 <body>
-    <div>
-        <p>这是登录后的跳蚤市场主页面</p>
+    <div id="app">
+        <div class="search">
+            <van-search v-model="searchValue" placeholder="请输入搜索关键词" />
+        </div>
+        <div class="groudInfo">
+            <ul>
+                <li v-for="(item,index) in vagueSearchList">
+                    {{item.good}}
+                </li>
+            </ul>
+        </div>
+        <div class="footer">
+            <van-tabbar v-model="tabActive" active-color="#DF5523" @change="tabChange">
+                <van-tabbar-item :icon="fleaIcon">跳蚤</van-tabbar-item>
+                <van-tabbar-item :icon="publishIcon">发布</van-tabbar-item>
+                <van-tabbar-item :icon="shopcarIcon">购物车</van-tabbar-item>
+                <van-tabbar-item :icon="meIcon">我的</van-tabbar-item>
+            </van-tabbar>
+        </div>
+
     </div>
 </body>
+<script>
+    let vm = new Vue({
+        el: '#app',
+        data: {
+            searchValue: "",
+            tabActive: 0,
+            fleaIcon: "hot",
+            publishIcon: "share-o",
+            shopcarIcon: "shopping-cart-o",
+            meIcon: "manager-o",
+            groudList: []
+        },
+        computed: {
+            // 模糊查询
+            vagueSearchList: function () {
+                return this.groudList.filter(item => item.good.includes(this.searchValue));
+            }
+        },
+        methods: {
+            // 当点击的标签出现变化时，判断是哪一个标签，并把样式修改一下
+            tabChange: function () {
+                switch (this.tabActive) {
+                    case 0: {
+                        this.fleaIcon = "hot";
+                        this.publishIcon = "share-o";
+                        this.shopcarIcon = "shopping-cart-o";
+                        this.meIcon = "manager-o";
+                        break;
+                    };
+                    case 1: {
+                        this.fleaIcon = "hot-o";
+                        this.publishIcon = "share";
+                        this.shopcarIcon = "shopping-cart-o";
+                        this.meIcon = "manager-o";
+                        break;
+                    };
+                    case 2: {
+                        this.fleaIcon = "hot-o";
+                        this.publishIcon = "share-o";
+                        this.shopcarIcon = "shopping-cart";
+                        this.meIcon = "manager-o";
+                        break;
+                    };
+                    case 3: {
+                        this.fleaIcon = "hot-o";
+                        this.publishIcon = "share-o";
+                        this.shopcarIcon = "shopping-cart-o";
+                        this.meIcon = "manager";
+                        break;
+                    }
+                }
+            },
+
+        },
+        beforeMount: function () {
+            vant.Toast.loading({
+                message: '加载中...',
+                forbidClick: true,
+            });
+        },
+        mounted: function () {
+            axios.get("http://localhost:5502/getGroundInfo").then(res => {
+                console.log(res.data);
+                vant.Toast.clear;
+                this.groudList = res.data;
+            })
+        }
+    })
+</script>
+
 </html>
