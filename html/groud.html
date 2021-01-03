@@ -15,17 +15,119 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <!-- 这里引入外部文件的字体图标样式 -->
     <link rel="stylesheet" href="../css/iconfont.css" />
+    <style type="text/css">
+        .search {
+            position: sticky;
+            top: 0;
+            height: 3rem;
+            z-index: 10;
+        }
+
+        .groudInfo img {
+            width: 8rem;
+            height: 10rem;
+            margin-left: 1rem;
+            margin-right: 0.3rem;
+            border-radius: 1.5rem;
+            vertical-align: top;
+        }
+
+        .groudInfo li {
+            margin-bottom: 1.5rem;
+            border-bottom: 0.1rem solid #eee;
+        }
+
+        .groudInfo .content {
+            position: relative;
+            display: inline-block;
+            width: 11rem;
+        }
+
+        .groudInfo .content h4 {
+            margin: 0.2rem 0;
+        }
+
+        .groudInfo .content p {
+            margin: 0.1rem 0;
+            height: 2.7rem;
+            font-size: 15px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .groudInfo .content .prize {
+            color: red;
+            font-size: 1.3rem;
+        }
+
+        .groudInfo .content .want {
+            float: right;
+            margin-top: 0.6rem;
+            color:gray;
+            font-size: 0.5rem;
+        }
+
+        .groudInfo .content .publisherHead {
+            position: absolute;
+            top: 7.3rem;
+            left: -1rem;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 2rem;
+        }
+
+        .groudInfo .content .publishName {
+            font-size: 0.2rem;
+            position: absolute;
+            top: 8rem;
+            left: 2.2rem;
+        }
+
+        .groudInfo .content .credit {
+            font-size: 0.1rem;
+            position: absolute;
+            right: 0;
+            top: 8rem;
+        }
+
+        .footer {
+            height: 3rem;
+        }
+
+        .groudInfo .get {
+            margin-left: 0.5rem;
+            display: inline-block;
+        }
+    </style>
 </head>
 
 <body>
     <div id="app">
         <div class="search">
-            <van-search v-model="searchValue" placeholder="请输入搜索关键词" />
+            <van-search v-model="searchValue" placeholder="请输入搜索关键词" shape="round" />
         </div>
         <div class="groudInfo">
             <ul>
                 <li v-for="(item,index) in vagueSearchList">
-                    {{item.good}}
+                    <img :src="item.imgurl[0]">
+                    <div class="content">
+                        <h4>{{item.good}}</h4>
+                        <p>{{item.info}}</p>
+                        <span class="prize">￥{{item.prize}}</span>
+                        <span class="want">{{item.want}}人想要</span>
+                        <img class="publisherHead" :src="item.publisher.headurl">
+                        <span class="publishName">{{item.publisher.name}}</span>
+                        <div class="credit">
+                            <van-icon name="fire" color="#1D82FE"/>
+                            <span>信用{{item.publisher.credit}}</span>
+                        </div>
+                    </div>
+                    <div class="get">
+                        <van-button color="linear-gradient(to right, #FE5C33, #EF0F25)" round>购买</van-button>
+                    </div>
                 </li>
             </ul>
         </div>
