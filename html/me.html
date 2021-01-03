@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的主页</title>
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.11/lib/index.css" />
+
+    <!-- 引入 Vue 和 Vant 的 JS 文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vant@2.11/lib/vant.min.js"></script>
+    <!-- 引入axios的JS文件 -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- 这里引入外部文件的字体图标样式 -->
+    <link rel="stylesheet" href="../css/iconfont.css" />
+    <style type="text/css">
+        .header {
+            height: 3rem;
+        }
+
+        .userInfo img {
+            width: 7rem;
+            height: 7rem;
+            border-radius: 7rem;
+            margin: 1rem 2rem 1rem 2rem;
+            vertical-align: top;
+        }
+
+        .userInfo .right {
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        .userInfo .right .support,
+        .userInfo .right .attention,
+        .userInfo .right .fan {
+            display: inline-block;
+            text-align: center;
+            margin-right: 2.5rem;
+            margin-bottom: 0.7rem;
+        }
+
+        .userInfo .right h3 {
+            margin: 0;
+        }
+
+        .userInfo .right p {
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="header">
+            <van-nav-bar left-text="返回" right-text="退出" left-arrow fixed @click-left="goToBack" @click-right="quit"/>
+        </div>
+        <div class="userInfo">
+            <img :src="userInfo.user.headurl">
+            <div class="right">
+                <div class="support">
+                    <h3>{{userInfo.support}}</h3>
+                    <p>获赞</p>
+                </div>
+                <div class="attention">
+                    <h3>{{userInfo.attention}}</h3>
+                    <p>关注</p>
+                </div>
+                <div class="fan">
+                    <h3>{{userInfo.fan}}</h3>
+                    <p>粉丝</p>
+                </div>
+                <div class="updata">
+                    <van-button type="default" block round text="编辑资料"></van-button>
+                </div>
+            </div>
+            
+        </div>
+        <div class="footer">
+            <van-tabbar v-model="tabActive" active-color="#DF5523" @change="tabChange">
+                <van-tabbar-item :icon="fleaIcon" @click="goToGround">跳蚤</van-tabbar-item>
+                <van-tabbar-item :icon="publishIcon" @click="goToPublish">发布</van-tabbar-item>
+                <van-tabbar-item :icon="shopcarIcon" @click="goToShopcar">购物车</van-tabbar-item>
+                <van-tabbar-item :icon="meIcon">我的</van-tabbar-item>
+            </van-tabbar>
+        </div>
+    </div>
+</body>
+<script>
+    let vm = new Vue({
+        el: "#app",
+        data: {
+            tabActive: 3,
+            fleaIcon: "hot-o",
+            publishIcon: "share-o",
+            shopcarIcon: "shopping-cart-o",
+            meIcon: "manager",
+            userInfo: {}
+        },
+        methods: {
+            // 当点击的标签出现变化时，判断是哪一个标签，并把样式修改一下
+            tabChange: function () {
+                switch (this.tabActive) {
+                    case 0: {
+                        this.fleaIcon = "hot";
+                        this.publishIcon = "share-o";
+                        this.shopcarIcon = "shopping-cart-o";
+                        this.meIcon = "manager-o";
+                        break;
+                    };
+                    case 1: {
+                        this.fleaIcon = "hot-o";
+                        this.publishIcon = "share";
+                        this.shopcarIcon = "shopping-cart-o";
+                        this.meIcon = "manager-o";
+                        break;
+                    };
+                    case 2: {
+                        this.fleaIcon = "hot-o";
+                        this.publishIcon = "share-o";
+                        this.shopcarIcon = "shopping-cart";
+                        this.meIcon = "manager-o";
+                        break;
+                    };
+                    case 3: {
+                        this.fleaIcon = "hot-o";
+                        this.publishIcon = "share-o";
+                        this.shopcarIcon = "shopping-cart-o";
+                        this.meIcon = "manager";
+                        break;
+                    }
+                }
+            },
+            // 界面跳转
+            goToGround: function () {
+                window.location.href = "./groud.html";
+            },
+            goToPublish: function () {
+                window.location.href = "./publish.html";
+            },
+            goToShopcar: function () {
+                window.location.href = "./shopcar.html";
+            },
+            // 返回
+            goToBack: function () {
+                history.go(-1);
+            },
+            // 退出
+            quit: function(){
+                sessionStorage.clear();
+                window.location.href = "./login.html";
+            }
+        },
+        beforeMount: function () {
+            vant.Toast.loading({
+                message: '加载中...',
+                forbidClick: true,
+            });
+        },
+        mounted: function () {
+            const logonUserId = sessionStorage.getItem("id");
+            console.log(logonUserId);
+            axios.get("http://localhost:5502/getUserInfo").then(res => {
+                console.log(res.data);
+                let userInfo = res.data;
+                for (let i = res.data.length - 1; i >= 0; i--) {
+                    let id = userInfo[i].user.id;
+                    if (logonUserId === id) {
+                        this.userInfo = userInfo[i];
+                        vant.Toast.clear;
+                        break;
+                    }
+                }
+            })
+        }
+    })
+</script>
+
+</html>

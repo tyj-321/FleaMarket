@@ -136,6 +136,11 @@
                             if (this.id === id && this.password === password) {
                                 vant.Toast.clear;
                                 window.location.href = "./groud.html";
+                                // 把登录的用户id，代表已经登录的信息
+                                if(sessionStorage.getItem("id") != ""){
+                                    sessionStorage.clear();
+                                }
+                                sessionStorage.setItem("id", this.id);
                                 break;
                             }
                             else if (this.id != id && this.password === password) {

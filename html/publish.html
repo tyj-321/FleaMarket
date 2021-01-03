@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布商品</title>
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.11/lib/index.css" />
+
+    <!-- 引入 Vue 和 Vant 的 JS 文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vant@2.11/lib/vant.min.js"></script>
+    <!-- 引入axios的JS文件 -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- 这里引入外部文件的字体图标样式 -->
+    <link rel="stylesheet" href="../css/iconfont.css" />
+</head>
+
+<body>
+    <div id="app">
+        <p>发布作品界面</p>
+        <div class="footer">
+            <van-tabbar v-model="tabActive" active-color="#DF5523" @change="tabChange">
+                <van-tabbar-item :icon="fleaIcon" @click="goToGround">跳蚤</van-tabbar-item>
+                <van-tabbar-item :icon="publishIcon">发布</van-tabbar-item>
+                <van-tabbar-item :icon="shopcarIcon" @click="goToShopcar">购物车</van-tabbar-item>
+                <van-tabbar-item :icon="meIcon" @click="goToMe">我的</van-tabbar-item>
+            </van-tabbar>
+        </div>
+    </div>
+</body>
+<script>
+    let vm = new Vue({
+        el: "#app",
+        data: {
+            tabActive: 1,
+            fleaIcon: "hot-o",
+            publishIcon: "share",
+            shopcarIcon: "shopping-cart-o",
+            meIcon: "manager-o"
+        },
+        methods: {
+            // 当点击的标签出现变化时，判断是哪一个标签，并把样式修改一下
+            tabChange: function () {
+                switch (this.tabActive) {
+                    case 0: {
+                        this.fleaIcon = "hot";
+                        this.publishIcon = "share-o";
+                        this.shopcarIcon = "shopping-cart-o";
+                        this.meIcon = "manager-o";
+                        break;
+                    };
+                    case 1: {
+                        this.fleaIcon = "hot-o";
+                        this.publishIcon = "share";
+                        this.shopcarIcon = "shopping-cart-o";
+                        this.meIcon = "manager-o";
+                        break;
+                    };
+                    case 2: {
+                        this.fleaIcon = "hot-o";
+                        this.publishIcon = "share-o";
+                        this.shopcarIcon = "shopping-cart";
+                        this.meIcon = "manager-o";
+                        break;
+                    };
+                    case 3: {
+                        this.fleaIcon = "hot-o";
+                        this.publishIcon = "share-o";
+                        this.shopcarIcon = "shopping-cart-o";
+                        this.meIcon = "manager";
+                        break;
+                    }
+                }
+            },
+            goToGround: function () {
+                window.location.href = "./groud.html";
+            },
+            goToShopcar: function () {
+                window.location.href = "./shopcar.html";
+            },
+            goToMe: function () {
+                window.location.href = "./me.html";
+            }
+        }
+    })
+</script>
+
+</html>

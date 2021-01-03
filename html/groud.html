@@ -19,7 +19,6 @@
         .search {
             position: sticky;
             top: 0;
-            height: 3rem;
             z-index: 10;
         }
 
@@ -94,7 +93,7 @@
         }
 
         .footer {
-            height: 3rem;
+            height: 2rem;
         }
 
         .groudInfo .get {
@@ -111,7 +110,7 @@
         </div>
         <div class="groudInfo">
             <ul>
-                <li v-for="(item,index) in vagueSearchList">
+                <li v-for="(item,index) in vagueSearchList" :key=item>
                     <img :src="item.imgurl[0]">
                     <div class="content">
                         <h4>{{item.good}}</h4>
@@ -134,9 +133,9 @@
         <div class="footer">
             <van-tabbar v-model="tabActive" active-color="#DF5523" @change="tabChange">
                 <van-tabbar-item :icon="fleaIcon">跳蚤</van-tabbar-item>
-                <van-tabbar-item :icon="publishIcon">发布</van-tabbar-item>
-                <van-tabbar-item :icon="shopcarIcon">购物车</van-tabbar-item>
-                <van-tabbar-item :icon="meIcon">我的</van-tabbar-item>
+                <van-tabbar-item :icon="publishIcon" @click="goToPublish">发布</van-tabbar-item>
+                <van-tabbar-item :icon="shopcarIcon" @click="goToShopcar">购物车</van-tabbar-item>
+                <van-tabbar-item :icon="meIcon" @click="goToMe">我的</van-tabbar-item>
             </van-tabbar>
         </div>
 
@@ -194,7 +193,15 @@
                     }
                 }
             },
-
+            goToPublish: function(){
+                window.location.href = "./publish.html";
+            },
+            goToShopcar: function(){
+                window.location.href = "./shopcar.html";
+            },
+            goToMe: function(){
+                window.location.href = "./me.html";
+            }
         },
         beforeMount: function () {
             vant.Toast.loading({
@@ -206,7 +213,7 @@
             axios.get("http://localhost:5502/getGroundInfo").then(res => {
                 console.log(res.data);
                 vant.Toast.clear;
-                this.groudList = res.data;
+                this.groudList = res.data.reverse();
             })
         }
     })
