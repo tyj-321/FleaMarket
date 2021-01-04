@@ -20,6 +20,10 @@
             height: 3rem;
         }
 
+        #app .footer {
+            height: 2rem;
+        }
+
         .userInfo img {
             width: 7rem;
             height: 7rem;
@@ -49,13 +53,100 @@
         .userInfo .right p {
             margin: 0.5rem 0;
         }
+
+        .userInfo .moreInfo {
+            position: relative;
+        }
+
+        .userInfo .moreInfo h2 {
+            display: inline-block;
+            margin: 0.1rem 0 0.1rem 2rem;
+        }
+
+        .userInfo .moreInfo .city {
+            display: inline-block;
+            position: absolute;
+            top: 0.5rem;
+            left: 19rem;
+            margin: 0;
+        }
+
+        .userInfo .moreInfo .checked {
+            margin-left: 2rem;
+        }
+
+        .userInfo .moreInfo .credit {
+            display: inline-block;
+            margin: 0.1rem 0;
+        }
+
+        .userInfo .moreInfo .sign {
+            margin: 0.1rem 0 0.5rem 2rem;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .userInfo .moreInfo .signContent {
+            margin: 0.1rem 0 0.5rem 2rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .userInfo .history {
+            margin: 1.5rem auto;
+            width: 90%;
+            border-top: 0.2rem solid #eee;
+        }
+
+        .userInfo .history img {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 1.5rem;
+        }
+
+        .userInfo .history .historyInfoContent {
+            display: inline-block;
+            width: 15rem;
+        }
+
+        .userInfo .history .info {
+            display: inline-block;
+        }
+
+        .userInfo .history .prize {
+            color: red;
+            font-weight: 600;
+        }
+
+        .userInfo .history .time {
+            float: right;
+            color: #A5A9B4;
+        }
+
+        .userInfo .history .deleteBtn {
+            text-align: right;
+        }
+
+        .userInfo .noHistory {
+            text-align: center;
+        }
+
+        .userInfo .noHistory img {
+            width: 13rem;
+            height: 13rem;
+        }
     </style>
 </head>
 
 <body>
     <div id="app">
         <div class="header">
-            <van-nav-bar left-text="返回" right-text="退出" left-arrow fixed @click-left="goToBack" @click-right="quit"/>
+            <van-nav-bar left-text="返回" right-text="退出" left-arrow fixed @click-left="goToBack" @click-right="quit" />
+        </div>
+        <div class="dialog">
+            <van-dialog v-model="ifDialogShow" title="提示" message="确认退出当前账号吗？" show-cancel-button
+                @confirm="confirmQuit">
+            </van-dialog>
         </div>
         <div class="userInfo">
             <img :src="userInfo.user.headurl">
@@ -76,7 +167,48 @@
                     <van-button type="default" block round text="编辑资料"></van-button>
                 </div>
             </div>
-            
+            <div class="moreInfo">
+                <h2>{{userInfo.user.name}}</h2>
+                <p class="city">坐标:{{userInfo.city}}</p>
+                <div class="checked">
+                    <van-icon name="checked" color="#1D82FE" />
+                    <span>已经认证</span>
+                    <p class="credit">信用{{userInfo.credit}}</p>
+                </div>
+                <p class="sign">个性签名</p>
+                <p class="signContent" v-if="userInfo.user.sign != ''">{{userInfo.user.sign}}</p>
+                <p class="signContent" v-else>这个用户很神秘哦，什么也没有留下</p>
+            </div>
+            <div class="history" v-if="history[0].good != ''">
+                <h2>消费历史</h2>
+                <ul>
+                    <li v-for="(item,index) in history" :key="item">
+                        <van-panel :title="item.good" status="交易成功">
+                            <div>
+                                <img :src="item.imgurl">
+                                <div class="historyInfoContent">
+                                    <p class="info">{{item.info}}</p>
+                                    <span class="prize">￥{{item.prize}}</span>
+                                    <span class="time">{{item.time}}</span>
+                                    <span class="count">×{{item.count}}</span>
+                                </div>
+                            </div>
+                            <template #footer>
+                                <div class="deleteBtn">
+                                    <van-button type="danger" round>删除</van-button>
+                                </div>
+                            </template>
+                        </van-panel>
+                    </li>
+                </ul>
+            </div>
+            <div class="noHistory" v-else>
+                <h2>无消费历史</h2>
+                <img src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fww4.sinaimg.cn%2Flarge%2F006APoFYjw1f8oc8dqnmvj308c08cglu.jpg&refer=http%3A%2F%2Fwww.sina.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1612342016&t=e885132148b41953dce1afc37f5871f9"
+                    alt="这里什么也没有">
+                <p>你还没有任何消费记录</p>
+            </div>
+
         </div>
         <div class="footer">
             <van-tabbar v-model="tabActive" active-color="#DF5523" @change="tabChange">
@@ -97,7 +229,9 @@
             publishIcon: "share-o",
             shopcarIcon: "shopping-cart-o",
             meIcon: "manager",
-            userInfo: {}
+            ifDialogShow: false,
+            userInfo: {},
+            history: []
         },
         methods: {
             // 当点击的标签出现变化时，判断是哪一个标签，并把样式修改一下
@@ -148,7 +282,10 @@
                 history.go(-1);
             },
             // 退出
-            quit: function(){
+            quit: function () {
+                this.ifDialogShow = true;
+            },
+            confirmQuit: function () {
                 sessionStorage.clear();
                 window.location.href = "./login.html";
             }
@@ -169,6 +306,7 @@
                     let id = userInfo[i].user.id;
                     if (logonUserId === id) {
                         this.userInfo = userInfo[i];
+                        this.history = userInfo[i].history;
                         vant.Toast.clear;
                         break;
                     }
