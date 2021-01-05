@@ -12,14 +12,62 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6/dist/vue.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vant@2.11/lib/vant.min.js"></script>
     <!-- 引入axios的JS文件 -->
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="../js/axios.min.js"></script>
     <!-- 这里引入外部文件的字体图标样式 -->
     <link rel="stylesheet" href="../css/iconfont.css" />
+    <style type="text/css">
+        .van-submit-bar {
+            margin-bottom: 3.1rem;
+        }
+
+        .goodInfo h2 {
+            margin: 0.1rem 0 1rem 1rem;
+            color: red;
+        }
+
+        .van-checkbox-group {
+            display: inline-block;
+            margin-left: 0.5rem;
+            position: relative;
+            top: 2rem;
+        }
+
+        .van-card {
+            display: inline-block;
+            width: 23rem;
+            margin-left: 2rem;
+            top: -2.2rem;
+        }
+    </style>
 </head>
 
 <body>
     <div id="app">
-        <p>购物车</p>
+        <div class="navbar">
+            <van-nav-bar left-text="购物车" right-text="管理" />
+        </div>
+        <div class="goodInfo">
+            <h2>全部商品</h2>
+            <ul>
+                <li v-for="(item,index) in shopcar" :key="item">
+                    <van-checkbox-group v-model="checkResult">
+                        <van-checkbox :name="item"></van-checkbox>
+                    </van-checkbox-group>
+                    <van-card :price="item.prize" :desc="item.info" :title="item.good"
+                        :thumb="item.imgurl">
+                        <template #footer>
+                            <van-stepper theme="round" button-size="22" disable-input :default-value="item.count" />
+                        </template>
+                    </van-card>
+                </li>
+            </ul>
+
+        </div>
+        <div class="submitBar">
+            <van-submit-bar :price="30050" button-text="提交订单">
+                <van-checkbox v-model="ifAllChecked">全选</van-checkbox>
+            </van-submit-bar>
+        </div>
         <div class="footer">
             <van-tabbar v-model="tabActive" active-color="#DF5523" @change="tabChange">
                 <van-tabbar-item :icon="fleaIcon" @click="goToGround">跳蚤</van-tabbar-item>
@@ -28,6 +76,8 @@
                 <van-tabbar-item :icon="meIcon" @click="goToMe">我的</van-tabbar-item>
             </van-tabbar>
         </div>
+
+
     </div>
 </body>
 <script>
@@ -38,7 +88,10 @@
             fleaIcon: "hot-o",
             publishIcon: "share-o",
             shopcarIcon: "shopping-cart",
-            meIcon: "manager-o"
+            meIcon: "manager-o",
+            ifAllChecked: false,
+            shopcar: [],
+            checkResult: []
         },
         methods: {
             // 当点击的标签出现变化时，判断是哪一个标签，并把样式修改一下
@@ -83,6 +136,28 @@
             goToMe: function () {
                 window.location.href = "./me.html";
             }
+        },
+        beforeMount: function () {
+            vant.Toast.loading({
+                message: '加载中...',
+                forbidClick: true,
+            });
+        },
+        mounted: function () {
+            const logonUserId = sessionStorage.getItem("id");
+            console.log(logonUserId);
+            axios.get("http://localhost:5502/getUserInfo").then(res => {
+                console.log(res.data);
+                let userInfo = res.data;
+                for (let i = res.data.length - 1; i >= 0; i--) {
+                    let id = userInfo[i].user.id;
+                    if (logonUserId === id) {
+                        this.shopcar = userInfo[i].shopcar;
+                        vant.Toast.clear;
+                        break;
+                    }
+                }
+            })
         }
     })
 </script>
