@@ -211,7 +211,6 @@
         },
         mounted: function () {
             axios.get("http://localhost:5502/getGroundInfo").then(res => {
-                console.log(res.data);
                 vant.Toast.clear;
                 this.groudList = res.data.reverse();
             })

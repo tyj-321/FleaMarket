@@ -298,9 +298,7 @@
         },
         mounted: function () {
             const logonUserId = sessionStorage.getItem("id");
-            console.log(logonUserId);
             axios.get("http://localhost:5502/getUserInfo").then(res => {
-                console.log(res.data);
                 let userInfo = res.data;
                 for (let i = res.data.length - 1; i >= 0; i--) {
                     let id = userInfo[i].user.id;

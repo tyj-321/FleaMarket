@@ -38,35 +38,60 @@
             margin-left: 2rem;
             top: -2.2rem;
         }
+
+        .van-submit-bar__bar .van-checkbox {
+            position: absolute;
+            left: 2rem;
+        }
+
+        .noGoodInfo {
+            text-align: center;
+            top: 50%;
+            transform: translateY(50%);
+        }
+
+        .noGoodInfo img {
+            width: 10rem;
+            height: 10rem;
+        }
     </style>
 </head>
 
 <body>
     <div id="app">
         <div class="navbar">
-            <van-nav-bar left-text="购物车" right-text="管理" />
+            <van-nav-bar left-text="购物车" :right-text="navbarRightText" @click-right="manageShops" />
         </div>
-        <div class="goodInfo">
+        <div class="goodInfo" v-if="shopcar[0].good != ''">
             <h2>全部商品</h2>
             <ul>
                 <li v-for="(item,index) in shopcar" :key="item">
-                    <van-checkbox-group v-model="checkResult">
+                    <van-checkbox-group v-model="checkResult" @change="singleGoodChecked">
                         <van-checkbox :name="item"></van-checkbox>
                     </van-checkbox-group>
-                    <van-card :price="item.prize" :desc="item.info" :title="item.good"
-                        :thumb="item.imgurl">
+                    <van-card :price="item.prize" :desc="item.info" :title="item.good" :thumb="item.imgurl">
                         <template #footer>
-                            <van-stepper theme="round" button-size="22" disable-input :default-value="item.count" />
+                            <van-stepper theme="round" button-size="22" disable-input :default-value="item.count"
+                                @plus="plusCount(index)" @minus="minusCount(index)" />
                         </template>
                     </van-card>
                 </li>
             </ul>
-
+            <div class="submitBar" v-if="ifManage === false">
+                <van-submit-bar :price="total" button-text="提交订单">
+                    <van-checkbox v-model="ifAllChecked" @click="allGoodChecked">全选</van-checkbox>
+                </van-submit-bar>
+            </div>
+            <div class="manageBar" v-else>
+                <van-submit-bar button-text="删除">
+                    <van-checkbox v-model="ifAllChecked" @click="allGoodChecked">全选</van-checkbox>
+                </van-submit-bar>
+            </div>
         </div>
-        <div class="submitBar">
-            <van-submit-bar :price="30050" button-text="提交订单">
-                <van-checkbox v-model="ifAllChecked">全选</van-checkbox>
-            </van-submit-bar>
+        <div class="noGoodInfo" v-else>
+            <img src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fa.mayouwang.com%2Faddons%2Fmihua_mall%2Frecouse%2Fimages%2Femptycart.png&refer=http%3A%2F%2Fa.mayouwang.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1612518225&t=6829eafe5525bdd22f26eb762a25e6b8"
+                alt="购物车空空如也">
+            <h4>你的购物车空空如也</h4>
         </div>
         <div class="footer">
             <van-tabbar v-model="tabActive" active-color="#DF5523" @change="tabChange">
@@ -91,7 +116,25 @@
             meIcon: "manager-o",
             ifAllChecked: false,
             shopcar: [],
-            checkResult: []
+            checkResult: [],
+            ifManage: false,
+            navbarRightText: "管理"
+        },
+        computed: {
+            total: function () {
+                if (this.checkResult.length === 0) {
+                    return 0;
+                }
+                else {
+                    let total = 0;
+                    for (let i = this.checkResult.length - 1; i >= 0; i--) {
+                        let count = this.checkResult[i].count;
+                        let prize = this.checkResult[i].prize;
+                        total = total + count * prize;
+                    }
+                    return total * 100;
+                }
+            }
         },
         methods: {
             // 当点击的标签出现变化时，判断是哪一个标签，并把样式修改一下
@@ -135,6 +178,38 @@
             },
             goToMe: function () {
                 window.location.href = "./me.html";
+            },
+            plusCount: function (index) {
+                this.shopcar[index].count++;
+            },
+            minusCount: function (index) {
+                this.shopcar[index].count--;
+            },
+            singleGoodChecked: function () {
+                if (this.checkResult.length === this.shopcar.length) {
+                    this.ifAllChecked = true;
+                }
+                else {
+                    this.ifAllChecked = false;
+                }
+            },
+            allGoodChecked: function () {
+                // 全选则所有商品都要选上
+                if (this.ifAllChecked === true) {
+                    this.checkResult = this.shopcar;
+                }
+                else {
+                    this.checkResult = [];
+                }
+            },
+            manageShops: function () {
+                this.ifManage = !this.ifManage;
+                if (this.navbarRightText === "管理") {
+                    this.navbarRightText = "完成";
+                }
+                else {
+                    this.navbarRightText = "管理";
+                }
             }
         },
         beforeMount: function () {
@@ -145,9 +220,7 @@
         },
         mounted: function () {
             const logonUserId = sessionStorage.getItem("id");
-            console.log(logonUserId);
             axios.get("http://localhost:5502/getUserInfo").then(res => {
-                console.log(res.data);
                 let userInfo = res.data;
                 for (let i = res.data.length - 1; i >= 0; i--) {
                     let id = userInfo[i].user.id;
