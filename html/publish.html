@@ -15,11 +15,59 @@
     <script src="../js/axios.min.js"></script>
     <!-- 这里引入外部文件的字体图标样式 -->
     <link rel="stylesheet" href="../css/iconfont.css" />
+    <style type="text/css">
+        .upLoader {
+            margin-left: 2rem;
+        }
+
+        .prizeLabel {
+            margin-left: 1rem;
+            display: inline-block;
+        }
+
+        .prize {
+            display: inline-block;
+            position: relative;
+            left: 16rem;
+            margin: 0.2rem 0;
+            color: red;
+        }
+
+        .van-icon {
+            vertical-align: -20%;
+        }
+
+        .van-icon-arrow {
+            color: #ddd;
+        }
+    </style>
 </head>
 
 <body>
     <div id="app">
-        <p>发布作品界面</p>
+        <div class="navbar">
+            <van-nav-bar left-text="取消" right-text="发布" left-arrow @click-left="backToGroud" @click-right="publish" />
+        </div>
+        <div class="info">
+            <van-cell-group>
+                <van-field v-model="good" label="商品" placeholder="请输入商品名称" />
+            </van-cell-group>
+            <van-field v-model="message" rows="3" autosize label="留言" type="textarea" maxlength="70"
+                placeholder="说说你的使用感受，入手渠道，转手原因..." show-word-limit />
+        </div>
+        <div class="upLoader">
+            <van-uploader v-model="fileList" :after-read="afterRead" preview-size="110px" multiple :max-count="3" />
+        </div>
+        <div class="prizeLabel">
+            <van-icon name="gold-coin" />
+            <span>价格</span>
+        </div>
+        <p class="prize" @click="showKeyboard">
+            <span>￥{{keyboardValue}}</span>
+            <van-icon name="arrow" />
+        </p>
+        <van-number-keyboard v-model="keyboardValue" :show="ifKeyboardShow" theme="custom" extra-key="."
+            close-button-text="完成" @blur="ifKeyboardShow = false" />
         <div class="footer">
             <van-tabbar v-model="tabActive" active-color="#DF5523" @change="tabChange">
                 <van-tabbar-item :icon="fleaIcon" @click="goToGround">跳蚤</van-tabbar-item>
@@ -38,7 +86,12 @@
             fleaIcon: "hot-o",
             publishIcon: "share",
             shopcarIcon: "shopping-cart-o",
-            meIcon: "manager-o"
+            meIcon: "manager-o",
+            good: "",
+            message: "",
+            fileList: [],
+            ifKeyboardShow: false,
+            keyboardValue: "0.00"
         },
         methods: {
             // 当点击的标签出现变化时，判断是哪一个标签，并把样式修改一下
@@ -82,6 +135,26 @@
             },
             goToMe: function () {
                 window.location.href = "./me.html";
+            },
+            backToGroud: function () {
+                window.location.href = "./groud.html";
+            },
+            afterRead: function () {
+                // 此时可以自行将文件上传至服务器
+                console.log(this.fileList[0].file.name);
+            },
+            showKeyboard: function () {
+                // 点击价格显示键盘
+                this.ifKeyboardShow = true;
+                this.keyboardValue = ""
+            },
+            publish: function () {
+                if (this.keyboardValue === "" || this.keyboardValue === "0.00") { 
+                    console.log("价格都不正确，你是要白给吗？");
+                }
+                else{
+                    console.log("发布，并同步到数据库");
+                }
             }
         }
     })
