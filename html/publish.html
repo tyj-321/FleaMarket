@@ -13,6 +13,8 @@
     <script src="https://cdn.jsdelivr.net/npm/vant@2.11/lib/vant.min.js"></script>
     <!-- 引入axios的JS文件 -->
     <script src="../js/axios.min.js"></script>
+    <!-- 引入qs的js文件 -->
+    <script src="https://cdn.bootcss.com/qs/6.7.0/qs.min.js"></script>
     <!-- 这里引入外部文件的字体图标样式 -->
     <link rel="stylesheet" href="../css/iconfont.css" />
     <style type="text/css">
@@ -48,12 +50,16 @@
         <div class="navbar">
             <van-nav-bar left-text="取消" right-text="发布" left-arrow @click-left="backToGroud" @click-right="publish" />
         </div>
+        <div class="dialog">
+            <van-dialog v-model="ifDialogShow" title="提示" message="确认放弃发布吗？" show-cancel-button @confirm="confirmQuit">
+            </van-dialog>
+        </div>
         <div class="info">
             <van-cell-group>
-                <van-field v-model="good" label="商品" placeholder="请输入商品名称" />
+                <van-field v-model="good" label="商品" placeholder="请输入商品名称" required :error="ifGoodEmpty" />
             </van-cell-group>
             <van-field v-model="message" rows="3" autosize label="留言" type="textarea" maxlength="70"
-                placeholder="说说你的使用感受，入手渠道，转手原因..." show-word-limit />
+                placeholder="说说你的使用感受，入手渠道，转手原因..." show-word-limit required :error="ifInfoEmpty" />
         </div>
         <div class="upLoader">
             <van-uploader v-model="fileList" :after-read="afterRead" preview-size="110px" multiple :max-count="3" />
@@ -87,11 +93,15 @@
             publishIcon: "share",
             shopcarIcon: "shopping-cart-o",
             meIcon: "manager-o",
+            ifDialogShow: false,
             good: "",
             message: "",
             fileList: [],
             ifKeyboardShow: false,
-            keyboardValue: "0.00"
+            keyboardValue: "0.00",
+            ifGoodEmpty: false,
+            ifInfoEmpty: false,
+            pulisherInfo: {}
         },
         methods: {
             // 当点击的标签出现变化时，判断是哪一个标签，并把样式修改一下
@@ -137,6 +147,9 @@
                 window.location.href = "./me.html";
             },
             backToGroud: function () {
+                this.ifDialogShow = true;
+            },
+            confirmQuit: function () {
                 window.location.href = "./groud.html";
             },
             afterRead: function () {
@@ -149,13 +162,90 @@
                 this.keyboardValue = ""
             },
             publish: function () {
-                if (this.keyboardValue === "" || this.keyboardValue === "0.00") { 
-                    console.log("价格都不正确，你是要白给吗？");
+                if (this.good === "") {
+                    this.ifGoodEmpty = true;
                 }
-                else{
+                else if (this.message === "") {
+                    this.ifInfoEmpty = true;
+                }
+                else if (this.fileList.length === 0){
+                    vant.Toast('有图有真相哦');
+                }
+                else if (this.keyboardValue === "" || this.keyboardValue === "0.00") {
+                    vant.Toast('价格不对！');
+                }
+                else {
+                    vant.Toast.loading({
+                        message: '正在上传...',
+                        forbidClick: true,
+                    });
                     console.log("发布，并同步到数据库");
+                    console.log(this.pulisherInfo);
+                    // 获取当前时间的字符串
+                    let year = new Date().getFullYear().toString();
+                    let month = (new Date().getMonth() + 1).toString();
+                    let day = new Date().getDate().toString();
+                    if (month < 10) {
+                        month = "0" + month;
+                    }
+                    if (day < 10) {
+                        day = "0" + day;
+                    }
+                    let time = year + "-" + month + "-" + day;
+                    console.log(time);
+                    // 获取上传的图片文件的路径数组
+                    let imgurl = [];
+                    for (let i = this.fileList.length - 1; i >= 0; i--) {
+                        let imgsrc = "../src/" + this.fileList[i].file.name;
+                        imgurl.push(imgsrc);
+                    }
+                    // 发布就同步到数据库
+                    axios.post("http://localhost:5502/groudRegister", Qs.stringify({
+                        publisher: {
+                            name: this.pulisherInfo.user.name,
+                            headurl: this.pulisherInfo.user.headurl,
+                            credit: this.pulisherInfo.credit
+                        },
+                        comment: [
+                            {
+                                name: "",
+                                headurl: "",
+                                content: ""
+                            }
+                        ],
+                        good: this.good,
+                        info: this.message,
+                        prize: this.keyboardValue,
+                        want: "0",
+                        time: time,
+                        browse: "0",
+                        imgurl: imgurl,
+                        city: "成都"
+                    }))
+                        .then(function (response) {
+                            vant.Toast.clear;
+                            vant.Toast.success('发布成功');
+                            console.log(response.data);
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
                 }
             }
+        },
+        mounted: function () {
+            const logonUserId = sessionStorage.getItem("id");
+            axios.get("http://localhost:5502/getUserInfo").then(res => {
+                let userInfo = res.data;
+                for (let i = res.data.length - 1; i >= 0; i--) {
+                    let id = userInfo[i].user.id;
+                    if (logonUserId === id) {
+                        this.pulisherInfo = userInfo[i];
+                        vant.Toast.clear;
+                        break;
+                    }
+                }
+            })
         }
     })
 </script>

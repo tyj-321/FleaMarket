@@ -69,6 +69,24 @@ app.all('*', function(req, res, next) {             //设置跨域访问
     res.json(allGroundData);
 });
 
+ // 注册广场数据
+ app.post('/groudRegister', function(req, res) {
+    var newobj = req.body;
+    console.log(req.body);
+    MongoClient.connect(url, function(err,db){
+      if (err) throw err;
+      console.log("广场数据库已经连接!");
+      var dbName = db.db("Flea-Market");
+      dbName.collection("Ground").insertOne(newobj, function(err, res){
+        if (err) throw err;
+        console.log("向广场数据库中插入数据成功");
+        db.close();
+      });
+    });
+    res.status(200);
+    res.json("post successfully");
+});
+
  //配置服务端口
 var server = app.listen(5502,function(){
     console.log('listen at http://localhost:5502');
