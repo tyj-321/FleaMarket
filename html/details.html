@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品详情</title>
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.12/lib/index.css" />
+
+    <!-- 引入 Vue 和 Vant 的 JS 文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vant@2.12/lib/vant.min.js"></script>
+    <!-- 引入axios的JS文件 -->
+    <script src="../js/axios.min.js"></script>
+    <!-- 引入qs的js文件 -->
+    <script src="https://cdn.bootcss.com/qs/6.7.0/qs.min.js"></script>
+    <!-- 这里引入外部文件的字体图标样式 -->
+    <link rel="stylesheet" href="../css/iconfont.css" />
+    <style type="text/css">
+        .goodsAction {
+            width: 100%;
+            height: 3rem;
+            position: fixed;
+            bottom: 0;
+            display: flex;
+        }
+
+        .goodsIcon {
+            width: 40%;
+            align-self: center;
+            display: inline-block;
+        }
+
+        .goodsIcon span {
+            display: block;
+            font-size: 0.8rem;
+        }
+
+        .van-button {
+            margin-right: 1.5rem;
+        }
+
+        .chat,
+        .cart,
+        .thumb-circle {
+            display: inline-block;
+            margin-left: 0.8rem;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="navbar">
+            <van-nav-bar title="详情" left-text="返回" left-arrow @click-left="goToGroud" />
+        </div>
+        <div class="goodsAction">
+            <div class="goodsIcon">
+                <div class="thumb-circle">
+                    <van-icon name="thumb-circle-o" size="22px" />
+                    <span>点赞</span>
+                </div>
+                <div class="chat">
+                    <van-icon name="chat-o" size="22px" />
+                    <span>留言</span>
+                </div>
+                <div class="cart">
+                    <van-icon name="cart-o" size="22px" />
+                    <span>购物车</span>
+                </div>
+            </div>
+            <van-button color="linear-gradient(to right, #ff6034, #ee0a24)" round>
+                加入购物车
+            </van-button>
+            <van-button color="linear-gradient(to right, #ff6034, #ee0a24)" round>
+                立即购买
+            </van-button>
+        </div>
+
+
+    </div>
+</body>
+<script>
+    let vm = new Vue({
+        el: "#app",
+        data: {
+            goodInfo: {}
+        },
+        methods: {
+            goToGroud: function () {
+                sessionStorage.clear();
+                window.location.href = "./groud.html";
+            }
+        },
+        // beforeMount: function () {
+        //     Toast.loading({
+        //         message: '加载中...',
+        //         forbidClick: true,
+        //     });
+        // },
+        mounted: function () {
+            axios.get("http://localhost:5502/getGroundInfo").then(res => {
+                let index = sessionStorage.getItem("index");
+                for (let i = res.data.length - 1; i >= 0; i--) {
+                    if (i === 10 - index) {
+                        this.goodInfo = res.data[i];
+                        break;
+                    }
+                }
+                // Toast.clear;
+            })
+        }
+    })
+</script>
+
+</html>

@@ -162,6 +162,7 @@
                 this.keyboardValue = ""
             },
             publish: function () {
+                // 发布的信息同步到数据库
                 if (this.good === "") {
                     this.ifGoodEmpty = true;
                 }
@@ -225,6 +226,7 @@
                         .then(function (response) {
                             vant.Toast.clear;
                             vant.Toast.success('发布成功');
+                            window.location.href = "./groud.html";
                             console.log(response.data);
                         })
                         .catch(function (error) {

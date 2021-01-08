@@ -65,7 +65,7 @@
         .groudInfo .content .want {
             float: right;
             margin-top: 0.6rem;
-            color:gray;
+            color: gray;
             font-size: 0.5rem;
         }
 
@@ -110,7 +110,7 @@
         </div>
         <div class="groudInfo">
             <ul>
-                <li v-for="(item,index) in vagueSearchList" :key=item>
+                <li v-for="(item,index) in vagueSearchList" :key=item @click="goToDetails(index)">
                     <img :src="item.imgurl[0]">
                     <div class="content">
                         <h4>{{item.good}}</h4>
@@ -120,7 +120,7 @@
                         <img class="publisherHead" :src="item.publisher.headurl">
                         <span class="publishName">{{item.publisher.name}}</span>
                         <div class="credit">
-                            <van-icon name="fire" color="#1D82FE"/>
+                            <van-icon name="fire" color="#1D82FE" />
                             <span>信用{{item.publisher.credit}}</span>
                         </div>
                     </div>
@@ -193,14 +193,18 @@
                     }
                 }
             },
-            goToPublish: function(){
+            goToPublish: function () {
                 window.location.href = "./publish.html";
             },
-            goToShopcar: function(){
+            goToShopcar: function () {
                 window.location.href = "./shopcar.html";
             },
-            goToMe: function(){
+            goToMe: function () {
                 window.location.href = "./me.html";
+            },
+            goToDetails: function(index){
+                window.location.href = "./details.html";
+                sessionStorage.setItem("index", index);
             }
         },
         beforeMount: function () {
