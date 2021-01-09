@@ -23,6 +23,11 @@
         }
 
         .prizeLabel {
+            margin-left: 10rem;
+            display: inline-block;
+        }
+
+        .ship {
             margin-left: 1rem;
             display: inline-block;
         }
@@ -30,7 +35,6 @@
         .prize {
             display: inline-block;
             position: relative;
-            left: 16rem;
             margin: 0.2rem 0;
             color: red;
         }
@@ -62,8 +66,12 @@
                 placeholder="说说你的使用感受，入手渠道，转手原因..." show-word-limit required :error="ifInfoEmpty" />
         </div>
         <div class="upLoader">
-            <van-uploader v-model="fileList" :after-read="afterRead" preview-size="110px" multiple :max-count="3" />
+            <van-uploader v-model="fileList" preview-size="110px" multiple :max-count="3" />
         </div>
+        <div class="ship">
+            <van-checkbox v-model="ifShipChecked" checked-color="#ee0a24">是否包邮</van-checkbox>
+        </div>
+
         <div class="prizeLabel">
             <van-icon name="gold-coin" />
             <span>价格</span>
@@ -101,6 +109,7 @@
             keyboardValue: "0.00",
             ifGoodEmpty: false,
             ifInfoEmpty: false,
+            ifShipChecked: false,
             pulisherInfo: {}
         },
         methods: {
@@ -152,10 +161,6 @@
             confirmQuit: function () {
                 window.location.href = "./groud.html";
             },
-            afterRead: function () {
-                // 此时可以自行将文件上传至服务器
-                console.log(this.fileList[0].file.name);
-            },
             showKeyboard: function () {
                 // 点击价格显示键盘
                 this.ifKeyboardShow = true;
@@ -169,7 +174,7 @@
                 else if (this.message === "") {
                     this.ifInfoEmpty = true;
                 }
-                else if (this.fileList.length === 0){
+                else if (this.fileList.length === 0) {
                     vant.Toast('有图有真相哦');
                 }
                 else if (this.keyboardValue === "" || this.keyboardValue === "0.00") {
@@ -181,7 +186,13 @@
                         forbidClick: true,
                     });
                     console.log("发布，并同步到数据库");
-                    console.log(this.pulisherInfo);
+                    let logistics = "";
+                    if (this.ifShipChecked === true) {
+                        logistics = "包邮";
+                    }
+                    else {
+                        logistics = "不包邮";
+                    }
                     // 获取当前时间的字符串
                     let year = new Date().getFullYear().toString();
                     let month = (new Date().getMonth() + 1).toString();
@@ -193,7 +204,6 @@
                         day = "0" + day;
                     }
                     let time = year + "-" + month + "-" + day;
-                    console.log(time);
                     // 获取上传的图片文件的路径数组
                     let imgurl = [];
                     for (let i = this.fileList.length - 1; i >= 0; i--) {
@@ -211,7 +221,8 @@
                             {
                                 name: "",
                                 headurl: "",
-                                content: ""
+                                content: "",
+                                rate: ""
                             }
                         ],
                         good: this.good,
@@ -221,7 +232,8 @@
                         time: time,
                         browse: "0",
                         imgurl: imgurl,
-                        city: "成都"
+                        city: "成都",
+                        logistics: logistics
                     }))
                         .then(function (response) {
                             vant.Toast.clear;
