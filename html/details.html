@@ -246,9 +246,12 @@
                         </van-panel>
                     </li>
                 </ul>
+                <van-field v-model="message" rows="3" autosize label="留言" type="textarea" maxlength="50"
+                    placeholder="快在这里留下你的足迹~" show-word-limit />
             </div>
             <div class="noComment" v-else>
-                <p>还没有任何人来留过言，看对眼就赶紧留言~</p>
+                <van-field v-model="message" rows="3" autosize label="留言" type="textarea" maxlength="50"
+                    placeholder="还没有任何人来留过言，看对眼就赶紧留言~" show-word-limit />
             </div>
         </div>
 
@@ -258,7 +261,7 @@
                     <van-icon :name="thumbName" size="22px" :color="thumbIconColor" />
                     <span>点赞</span>
                 </div>
-                <div class="chat">
+                <div class="chat" @click="goToMessage">
                     <van-icon name="chat-o" size="22px" color="#000" />
                     <span>留言</span>
                 </div>
@@ -283,11 +286,12 @@
             thumbIconColor: "#000",
             cartName: "cart-o",
             cartIconColor: "#000",
-            goodInfo: {}
+            goodInfo: {},
+            message: ""
         },
         methods: {
             goToGroud: function () {
-                sessionStorage.clear();
+                sessionStorage.removeItem("index");
                 window.location.href = "./groud.html";
             },
             thumbCircleResponse: function () {
@@ -309,6 +313,9 @@
                     this.cartName = "cart-o";
                     this.cartIconColor = "#000";
                 }
+            },
+            goToMessage: function () {
+                window.scrollTo(0,document.body.scrollHeight);
             }
         },
         beforeMount: function () {

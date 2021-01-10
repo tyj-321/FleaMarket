@@ -218,7 +218,7 @@
                 forbidClick: true,
             });
         },
-        mounted: function () {
+        mounted: function(){
             const logonUserId = sessionStorage.getItem("id");
             axios.get("http://localhost:5502/getUserInfo").then(res => {
                 let userInfo = res.data;
