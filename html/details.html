@@ -119,7 +119,7 @@
 
         .goodInfo .imgs img {
             width: 100%;
-            height: 15rem;
+            height: 18rem;
         }
 
         .goodInfo .pay {
@@ -183,13 +183,27 @@
             color: gray;
             margin-bottom: 4rem;
         }
+
+        .rate h4 {
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+
+        .rate .van-rate {
+            vertical-align: middle;
+        }
+
+        .van-field .van-button {
+            margin-top: 3.7rem;
+            right: 2rem;
+        }
     </style>
 </head>
 
 <body>
     <div id="app">
         <div class="navbar">
-            <van-nav-bar title="详情" left-text="返回" left-arrow @click-left="goToGroud" />
+            <van-nav-bar title="详情" left-text="返回" left-arrow @click-left="goToGroud" fixed placeholder />
         </div>
         <div class="main">
             <div class="publisherInfo">
@@ -219,7 +233,7 @@
                 </div>
                 <div class="imgs">
                     <ul>
-                        <li v-for="item in goodInfo.imgurl" :key="item">
+                        <li v-for="(item,index) in goodInfo.imgurl" :key="item" @click="imgPreview(index)">
                             <img :src="item" alt="详情图片">
                         </li>
                     </ul>
@@ -234,6 +248,7 @@
                     <span>浏览{{goodInfo.browse}}</span>
                 </div>
             </div>
+            <!-- 评论留言 -->
             <div class="comment" v-if="goodInfo.comment[0].name != ''">
                 <h4>全部留言</h4>
                 <span>·</span>
@@ -246,12 +261,29 @@
                         </van-panel>
                     </li>
                 </ul>
+                <div class="rate">
+                    <h4>我来评分</h4>
+                    <van-rate v-model="rate" allow-half color="#ffd21e" />
+                </div>
                 <van-field v-model="message" rows="3" autosize label="留言" type="textarea" maxlength="50"
-                    placeholder="快在这里留下你的足迹~" show-word-limit />
+                    placeholder="快在这里留下你的足迹~" show-word-limit>
+                    <template #button>
+                        <van-button size="small" type="primary" round @click="publishComment">发表</van-button>
+                    </template>
+                </van-field>
             </div>
+            <!-- 如果没有留言显示内容 -->
             <div class="noComment" v-else>
+                <div class="rate">
+                    <h4>我来评分</h4>
+                    <van-rate v-model="rate" allow-half color="#ffd21e" />
+                </div>
                 <van-field v-model="message" rows="3" autosize label="留言" type="textarea" maxlength="50"
-                    placeholder="还没有任何人来留过言，看对眼就赶紧留言~" show-word-limit />
+                    placeholder="还没有任何人来留过言，看对眼就赶紧留言~" show-word-limit>
+                    <template #button>
+                        <van-button size="small" type="primary" round @click="publishComment">发表</van-button>
+                    </template>
+                </van-field>
             </div>
         </div>
 
@@ -287,7 +319,8 @@
             cartName: "cart-o",
             cartIconColor: "#000",
             goodInfo: {},
-            message: ""
+            message: "",
+            rate: "0"
         },
         methods: {
             goToGroud: function () {
@@ -315,7 +348,58 @@
                 }
             },
             goToMessage: function () {
-                window.scrollTo(0,document.body.scrollHeight);
+                window.scrollTo(0, document.body.scrollHeight);
+            },
+            // 展示图片函数
+            imgPreview: function (index) {
+                console.log(index);
+                vant.ImagePreview({
+                    images: this.goodInfo.imgurl,
+                    startPosition: index,
+                    closeable: true,
+                    loop: false
+                });
+            },
+            publishComment: function () {
+                const logonUserId = sessionStorage.getItem("id");
+                let content = this.message;
+                let rate = this.rate;
+                let headurl = "";
+                let name = "";
+                axios.get("http://localhost:5502/getUserInfo").then(res => {
+                    let userInfo = res.data;
+                    for (let i = res.data.length - 1; i >= 0; i--) {
+                        let id = userInfo[i].user.id;
+                        if (logonUserId === id) {
+                            console.log(userInfo[i].user.headurl);
+                            console.log(userInfo[i].user.name);
+                            headurl = userInfo[i].user.headurl;
+                            name = userInfo[i].user.name;
+                            break;
+                        }
+                    }
+                    let newComment = {
+                        name,
+                        headurl,
+                        content,
+                        rate
+                    };
+                    if (this.goodInfo.comment[0].name != "") {
+                        // 这里还应该同步到数据库
+                        this.goodInfo.comment.push(newComment);
+                        this.rate = "0";
+                        this.message = "";
+                        vant.Toast.success('发布成功！');
+                    }
+                    else {
+                        // 这里还应该同步到数据库
+                        this.goodInfo.comment.pop();
+                        this.goodInfo.comment.push(newComment);
+                        this.rate = "0";
+                        this.message = "";
+                        vant.Toast.success('发布成功！');
+                    }
+                });
             }
         },
         beforeMount: function () {
