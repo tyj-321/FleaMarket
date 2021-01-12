@@ -109,7 +109,59 @@ app.all('*', function(req, res, next) {             //设置跨域访问
       });
     });
     res.status(200);
-    res.json("update successfully");
+    res.json("comment update successfully");
+});
+
+ // 购物车新增
+ app.post('/shopcarUpdate', function(req, res) {
+    var where = {
+      "user.id": req.body.id
+    };
+    console.log(where);
+    var newShopcar = {
+      "shopcar": req.body.shopcar
+    };
+    console.log(newShopcar);
+    MongoClient.connect(url, function(err,db){
+      if (err) throw err;
+      console.log("数据库已经连接!");
+      var dbName = db.db("Flea-Market");
+      dbName.collection("User").updateOne(where, {$push:newShopcar}, function(err, res){
+        if (err) throw err;
+        console.log("向数据库中更新购物车数据成功");
+        db.close();
+      });
+    });
+    res.status(200);
+    res.json("shopcar update successfully");
+});
+
+ // 购物车删除
+ app.post('/shopcarDelete', function(req, res) {
+    var where = {
+      "user.id": req.body.id
+    };
+    console.log(where);
+    var deleteShopcar = {
+      "shopcar": req.body.shopcar
+    };
+    console.log(deleteShopcar);
+    console.log(deleteShopcar.shopcar.length);
+    MongoClient.connect(url, function(err,db){
+      if (err) throw err;
+      console.log("数据库已经连接!");
+      var dbName = db.db("Flea-Market");
+      for(let i = deleteShopcar.shopcar.length-1;i>=0;i--){
+          dbName.collection("User").updateOne(where, {$pull:{"shopcar":deleteShopcar.shopcar[i]}}, function(err, res){
+          if (err) throw err;
+          console.log("向数据库中删除购物车数据成功");
+        });
+      }
+      db.close();
+    });
+    
+    res.status(200);
+    res.json("shopcar update successfully");
 });
 
  //配置服务端口

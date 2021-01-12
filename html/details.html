@@ -197,6 +197,47 @@
             margin-top: 3.7rem;
             right: 2rem;
         }
+
+        .sheet .content {
+            padding: 16px 16px 120px;
+        }
+
+        .sheet .content img {
+            width: 7rem;
+            height: 7rem;
+            vertical-align: top;
+        }
+
+        .sheet .content .right {
+            display: inline-block;
+        }
+
+        .sheet .content .right span {
+            color: red;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .sheet .content .right p {
+            font-size: 1.5rem;
+            color: #969799;
+            font-weight: 700;
+        }
+
+        .sheet .content .countSliper {
+            margin-top: 0.8rem;
+        }
+
+        .sheet .content .van-stepper {
+            float: right;
+        }
+
+        .sheet .content .van-button {
+            position: absolute;
+            top: 15rem;
+            left: 0;
+        }
+    </style>
     </style>
 </head>
 
@@ -305,6 +346,24 @@
             <van-button color="linear-gradient(to right, #ff6034, #ee0a24)" round>
                 我想要
             </van-button>
+            <div class="sheet">
+                <van-action-sheet v-model="ifSheetShow" title="商品规格">
+                    <div class="content">
+                        <img :src="goodInfo.imgurl[0]" alt="商品图片">
+                        <div class="right">
+                            <span>￥{{goodInfo.prize}}</span>
+                            <p>{{goodInfo.good}}</p>
+                        </div>
+                        <div class="countSliper">
+                            <span>选择数量</span>
+                            <van-stepper v-model="count" />
+                        </div>
+                        <van-button color="linear-gradient(to right, #ff6034, #ee0a24)" size="large" block round
+                            @click="joinShopcar">加入购物车
+                        </van-button>
+                    </div>
+                </van-action-sheet>
+            </div>
         </div>
 
 
@@ -321,7 +380,9 @@
             goodInfo: {},
             comment: [],
             message: "",
-            rate: "0"
+            rate: "0",
+            ifSheetShow: false,
+            count: "1"
         },
         computed: {
             reverseComment: function () {
@@ -345,12 +406,12 @@
             },
             cartResponse: function () {
                 if (this.cartName === "cart-o") {
-                    this.cartName = "cart";
-                    this.cartIconColor = "#F21F28";
+                    this.ifSheetShow = true;
                 }
                 else {
                     this.cartName = "cart-o";
                     this.cartIconColor = "#000";
+                    vant.Toast('已从购物车删除');
                 }
             },
             goToMessage: function () {
@@ -366,6 +427,7 @@
                     loop: false
                 });
             },
+            // 发表评论，并同步到数据库
             publishComment: function () {
                 const logonUserId = sessionStorage.getItem("id");
                 let content = this.message;
@@ -411,9 +473,44 @@
                             }
                         })
                         .catch(function (error) {
+                            vant.Toast.fail('发布失败！');
                             console.log(error);
                         });
                 });
+            },
+            // 加入购物车
+            joinShopcar: function () {
+                const logonUserId = sessionStorage.getItem("id");
+                let good = this.goodInfo.good;
+                let info = this.goodInfo.info;
+                let prize = this.goodInfo.prize;
+                let imgurl = this.goodInfo.imgurl[0];
+                let count = this.count;
+                let newShopcar = {
+                    good,
+                    info,
+                    prize,
+                    imgurl,
+                    count
+                };
+                let that = this;
+                axios.post("http://localhost:5502/shopcarUpdate", Qs.stringify({
+                    id: logonUserId,
+                    shopcar: newShopcar
+                }))
+                    .then(function (response) {
+                        vant.Toast('成功加入购物车！');
+                        that.ifSheetShow = false;
+                        if (that.cartName === "cart-o") {
+                            that.cartName = "cart";
+                            that.cartIconColor = "#F21F28";
+                        }
+                        console.log(response.data);
+                    })
+                    .catch(function (error) {
+                        vant.Toast.fail('加入购物车失败！');
+                        console.log(error);
+                    });
             }
         },
         beforeMount: function () {

@@ -13,11 +13,17 @@
     <script src="https://cdn.jsdelivr.net/npm/vant@2.11/lib/vant.min.js"></script>
     <!-- 引入axios的JS文件 -->
     <script src="../js/axios.min.js"></script>
+    <!-- 引入qs的js文件 -->
+    <script src="https://cdn.bootcss.com/qs/6.7.0/qs.min.js"></script>
     <!-- 这里引入外部文件的字体图标样式 -->
     <link rel="stylesheet" href="../css/iconfont.css" />
     <style type="text/css">
         .van-submit-bar {
             margin-bottom: 3.1rem;
+        }
+
+        .goodInfo {
+            margin-bottom: 5rem;
         }
 
         .goodInfo h2 {
@@ -65,7 +71,7 @@
         <div class="goodInfo" v-if="shopcar != undefined">
             <h2>全部商品</h2>
             <ul>
-                <li v-for="(item,index) in shopcar" :key="item">
+                <li v-for="(item,index) in reverseShopcar" :key="item">
                     <van-checkbox-group v-model="checkResult" @change="singleGoodChecked">
                         <van-checkbox :name="item"></van-checkbox>
                     </van-checkbox-group>
@@ -83,7 +89,7 @@
                 </van-submit-bar>
             </div>
             <div class="manageBar" v-else>
-                <van-submit-bar button-text="删除">
+                <van-submit-bar button-text="删除" @submit="deleteShopcar">
                     <van-checkbox v-model="ifAllChecked" @click="allGoodChecked">全选</van-checkbox>
                 </van-submit-bar>
             </div>
@@ -134,6 +140,9 @@
                     }
                     return total * 100;
                 }
+            },
+            reverseShopcar: function () {
+                return this.shopcar.reverse();
             }
         },
         methods: {
@@ -210,6 +219,23 @@
                 else {
                     this.navbarRightText = "管理";
                 }
+            },
+            // 删除购物车内容
+            deleteShopcar: function () {
+                console.log(this.checkResult);
+                const logonUserId = sessionStorage.getItem("id");
+                axios.post("http://localhost:5502/shopcarDelete", Qs.stringify({
+                    id: logonUserId,
+                    shopcar: this.checkResult
+                }))
+                    .then(function (response) {
+                        vant.Toast('删除成功！请刷新查看');
+                        console.log(response.data);
+                    })
+                    .catch(function (error) {
+                        vant.Toast.fail('删除失败');
+                        console.log(error);
+                    });
             }
         },
         beforeMount: function () {
@@ -218,7 +244,7 @@
                 forbidClick: true,
             });
         },
-        mounted: function(){
+        mounted: function () {
             const logonUserId = sessionStorage.getItem("id");
             axios.get("http://localhost:5502/getUserInfo").then(res => {
                 let userInfo = res.data;
