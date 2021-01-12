@@ -62,7 +62,7 @@
         <div class="navbar">
             <van-nav-bar left-text="购物车" :right-text="navbarRightText" @click-right="manageShops" fixed placeholder />
         </div>
-        <div class="goodInfo" v-if="shopcar[0].good != ''">
+        <div class="goodInfo" v-if="shopcar != undefined">
             <h2>全部商品</h2>
             <ul>
                 <li v-for="(item,index) in shopcar" :key="item">

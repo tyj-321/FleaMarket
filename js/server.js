@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const ObjectId = require('mongodb').ObjectId;
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -85,6 +86,30 @@ app.all('*', function(req, res, next) {             //设置跨域访问
     });
     res.status(200);
     res.json("post successfully");
+});
+
+ // 评论新增
+ app.post('/commentUpdate', function(req, res) {
+    var where = {
+      "_id": ObjectId(req.body.id)
+    };
+    console.log(where);
+    var newComment = {
+      "comment": req.body.comment
+    };
+    console.log(newComment);
+    MongoClient.connect(url, function(err,db){
+      if (err) throw err;
+      console.log("数据库已经连接!");
+      var dbName = db.db("Flea-Market");
+      dbName.collection("Ground").updateOne(where, {$push:newComment}, function(err, res){
+        if (err) throw err;
+        console.log("向数据库中更新评论数据成功");
+        db.close();
+      });
+    });
+    res.status(200);
+    res.json("update successfully");
 });
 
  //配置服务端口

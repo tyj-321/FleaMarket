@@ -121,33 +121,15 @@
                             id: this.id,
                             name: this.name,
                             password: this.password,
-                            headurl: "http://pic.51yuansu.com/pic3/cover/01/69/80/595f67c2aff1e_610.jpg",
-                            sign: ""
+                            headurl: "http://pic.51yuansu.com/pic3/cover/01/69/80/595f67c2aff1e_610.jpg"
                         },
-                        shopcar: [
-                            {
-                                good: "",
-                                info: "",
-                                prize: "",
-                                imgurl: "",
-                                count: ""
-                            }
-                        ],
-                        history: [
-                            {
-                                good: "",
-                                info: "",
-                                prize: "",
-                                imgurl: "",
-                                time: ""
-                            }
-                        ],
                         support: "0",
                         attention: "0",
                         fan: "0",
                         city: "成都"
                     }))
                         .then(function (response) {
+                            vant.Toast.success('注册成功！');
                             console.log(response.data);
                         })
                         .catch(function (error) {

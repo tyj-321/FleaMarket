@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6/dist/vue.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vant@2.11/lib/vant.min.js"></script>
     <!-- 引入axios的JS文件 -->
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="../js/axios.min.js"></script>
     <!-- 这里引入外部文件的字体图标样式 -->
     <link rel="stylesheet" href="../css/iconfont.css" />
     <style type="text/css">
@@ -176,10 +176,10 @@
                     <p class="credit">信用{{userInfo.credit}}</p>
                 </div>
                 <p class="sign">个性签名</p>
-                <p class="signContent" v-if="userInfo.user.sign != ''">{{userInfo.user.sign}}</p>
+                <p class="signContent" v-if="userInfo.user.sign != undefined">{{userInfo.user.sign}}</p>
                 <p class="signContent" v-else>这个用户很神秘哦，什么也没有留下</p>
             </div>
-            <div class="history" v-if="history[0].good != ''">
+            <div class="history" v-if="history != undefined">
                 <h2>消费历史</h2>
                 <ul>
                     <li v-for="(item,index) in history" :key="item">
