@@ -60,6 +60,49 @@
             width: 10rem;
             height: 10rem;
         }
+
+        .buySheet .content {
+            padding: 16px 16px 0;
+        }
+
+        .buySheet .van-address-edit__buttons {
+            position: relative;
+        }
+
+        .buySheet .van-address-edit__buttons .van-button {
+            position: absolute;
+            left: 0.1rem;
+        }
+
+        .buySheet .content img {
+            width: 7rem;
+            height: 7rem;
+            vertical-align: top;
+        }
+
+        .buySheet .content .right {
+            display: inline-block;
+        }
+
+        .buySheet .content .right span {
+            color: red;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .buySheet .content .right p {
+            font-size: 1.5rem;
+            color: #969799;
+            font-weight: 700;
+        }
+
+        .buySheet .content .countSliper {
+            margin-top: 0.8rem;
+        }
+
+        .buySheet .content .van-stepper {
+            float: right;
+        }
     </style>
 </head>
 
@@ -84,7 +127,7 @@
                 </li>
             </ul>
             <div class="submitBar" v-if="ifManage === false">
-                <van-submit-bar :price="total" button-text="提交订单">
+                <van-submit-bar :price="total" button-text="提交订单" @submit="buy">
                     <van-checkbox v-model="ifAllChecked" @click="allGoodChecked">全选</van-checkbox>
                 </van-submit-bar>
             </div>
@@ -92,6 +135,26 @@
                 <van-submit-bar button-text="删除" @submit="deleteShopcar">
                     <van-checkbox v-model="ifAllChecked" @click="allGoodChecked">全选</van-checkbox>
                 </van-submit-bar>
+            </div>
+            <div class="buySheet">
+                <van-action-sheet v-model="ifBuySheetShow" title="确认信息">
+                    <div class="content">
+                        <ul>
+                            <li v-for="item in checkResult">
+                                <img :src="item.imgurl" alt="商品图片">
+                                <div class="right">
+                                    <span>￥{{item.prize}}</span>
+                                    <p>{{item.good}}</p>
+                                </div>
+                                <div class="countSliper">
+                                    <span>选择数量</span>
+                                    <van-stepper v-model="buyCount" />
+                                </div>
+                            </li>
+                        </ul>
+                        <van-address-edit :area-list="areaList" show-set-default save-button-text="购买" @save="pay" />
+                    </div>
+                </van-action-sheet>
             </div>
         </div>
         <div class="noGoodInfo" v-else>
@@ -124,7 +187,10 @@
             shopcar: [],
             checkResult: [],
             ifManage: false,
-            navbarRightText: "管理"
+            navbarRightText: "管理",
+            ifBuySheetShow: false,
+            buyCount: "1",
+            areaList: {}
         },
         computed: {
             total: function () {
@@ -222,7 +288,6 @@
             },
             // 删除购物车内容
             deleteShopcar: function () {
-                console.log(this.checkResult);
                 const logonUserId = sessionStorage.getItem("id");
                 axios.post("http://localhost:5502/shopcarDelete", Qs.stringify({
                     id: logonUserId,
@@ -234,6 +299,41 @@
                     })
                     .catch(function (error) {
                         vant.Toast.fail('删除失败');
+                        console.log(error);
+                    });
+            },
+            // 确认购买
+            buy: function () {
+                this.ifBuySheetShow = true;
+            },
+            // 加入购买历史
+            pay: function () {
+                const logonUserId = sessionStorage.getItem("id");
+                let newHistory = this.checkResult;
+                // 获取当前时间的字符串
+                let year = new Date().getFullYear().toString();
+                let month = (new Date().getMonth() + 1).toString();
+                let day = new Date().getDate().toString();
+                if (month < 10) {
+                    month = "0" + month;
+                }
+                if (day < 10) {
+                    day = "0" + day;
+                }
+                let time = year + "-" + month + "-" + day;
+                for (let i = newHistory.length - 1; i >= 0; i--) {
+                    newHistory[i].time = time;
+                }
+                axios.post("http://localhost:5502/historyUpdate", Qs.stringify({
+                    id: logonUserId,
+                    history: newHistory
+                }))
+                    .then(function (response) {
+                        vant.Toast('购买成功!');
+                        console.log(response.data);
+                    })
+                    .catch(function (error) {
+                        vant.Toast.fail('购买失败!');
                         console.log(error);
                     });
             }
@@ -252,10 +352,13 @@
                     let id = userInfo[i].user.id;
                     if (logonUserId === id) {
                         this.shopcar = userInfo[i].shopcar;
-                        vant.Toast.clear;
                         break;
                     }
                 }
+            });
+            axios.get("../js/areaList.json").then(res => {
+                this.areaList = res.data;
+                vant.Toast.clear;
             })
         }
     })

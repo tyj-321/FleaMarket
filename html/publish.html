@@ -80,8 +80,10 @@
             <span>￥{{keyboardValue}}</span>
             <van-icon name="arrow" />
         </p>
-        <van-number-keyboard v-model="keyboardValue" :show="ifKeyboardShow" theme="custom" extra-key="."
-            close-button-text="完成" @blur="ifKeyboardShow = false" />
+        <div class="keyboard">
+            <van-number-keyboard v-model="keyboardValue" :show="ifKeyboardShow" theme="custom" extra-key="."
+                close-button-text="完成" @blur="ifKeyboardShow = false" />
+        </div>
         <div class="footer">
             <van-tabbar v-model="tabActive" active-color="#DF5523" @change="tabChange">
                 <van-tabbar-item :icon="fleaIcon" @click="goToGround">跳蚤</van-tabbar-item>

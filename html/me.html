@@ -13,6 +13,8 @@
     <script src="https://cdn.jsdelivr.net/npm/vant@2.11/lib/vant.min.js"></script>
     <!-- 引入axios的JS文件 -->
     <script src="../js/axios.min.js"></script>
+    <!-- 引入qs的js文件 -->
+    <script src="https://cdn.bootcss.com/qs/6.7.0/qs.min.js"></script>
     <!-- 这里引入外部文件的字体图标样式 -->
     <link rel="stylesheet" href="../css/iconfont.css" />
     <style type="text/css">
@@ -195,7 +197,7 @@
                             </div>
                             <template #footer>
                                 <div class="deleteBtn">
-                                    <van-button type="danger" round>删除</van-button>
+                                    <van-button type="danger" round @click="deleteHistory(item)">删除</van-button>
                                 </div>
                             </template>
                         </van-panel>
@@ -288,6 +290,22 @@
             confirmQuit: function () {
                 sessionStorage.clear();
                 window.location.href = "./login.html";
+            },
+            deleteHistory: function (item) {
+                console.log(item);
+                const logonUserId = sessionStorage.getItem("id");
+                axios.post("http://localhost:5502/historyDelete", Qs.stringify({
+                    id: logonUserId,
+                    history: item
+                }))
+                    .then(function (response) {
+                        vant.Toast('删除成功！请刷新查看');
+                        console.log(response.data);
+                    })
+                    .catch(function (error) {
+                        vant.Toast.fail('删除失败');
+                        console.log(error);
+                    });
             }
         },
         beforeMount: function () {
@@ -296,7 +314,7 @@
                 forbidClick: true,
             });
         },
-        mounted: function(){
+        mounted: function () {
             const logonUserId = sessionStorage.getItem("id");
             axios.get("http://localhost:5502/getUserInfo").then(res => {
                 let userInfo = res.data;
@@ -304,7 +322,7 @@
                     let id = userInfo[i].user.id;
                     if (logonUserId === id) {
                         this.userInfo = userInfo[i];
-                        this.history = userInfo[i].history;
+                        this.history = userInfo[i].history.reverse();
                         vant.Toast.clear;
                         break;
                     }

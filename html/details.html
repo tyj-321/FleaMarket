@@ -198,41 +198,84 @@
             right: 2rem;
         }
 
-        .sheet .content {
+        .buySheet .content {
+            padding: 16px 16px 0;
+        }
+
+        .buySheet .van-address-edit__buttons {
+            position: relative;
+        }
+
+        .buySheet .van-address-edit__buttons .van-button {
+            position: absolute;
+            left: 0.1rem;
+        }
+
+        .shopcarSheet .content {
             padding: 16px 16px 120px;
         }
 
-        .sheet .content img {
+        .shopcarSheet .content img {
             width: 7rem;
             height: 7rem;
             vertical-align: top;
         }
 
-        .sheet .content .right {
+        .shopcarSheet .content .right {
             display: inline-block;
         }
 
-        .sheet .content .right span {
+        .shopcarSheet .content .right span {
             color: red;
             font-size: 2rem;
             font-weight: 600;
         }
 
-        .sheet .content .right p {
+        .shopcarSheet .content .right p {
             font-size: 1.5rem;
             color: #969799;
             font-weight: 700;
         }
 
-        .sheet .content .countSliper {
+        .buySheet .content img {
+            width: 7rem;
+            height: 7rem;
+            vertical-align: top;
+        }
+
+        .buySheet .content .right {
+            display: inline-block;
+        }
+
+        .buySheet .content .right span {
+            color: red;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .buySheet .content .right p {
+            font-size: 1.5rem;
+            color: #969799;
+            font-weight: 700;
+        }
+
+        .buySheet .content .countSliper {
             margin-top: 0.8rem;
         }
 
-        .sheet .content .van-stepper {
+        .buySheet .content .van-stepper {
             float: right;
         }
 
-        .sheet .content .van-button {
+        .shopcarSheet .content .countSliper {
+            margin-top: 0.8rem;
+        }
+
+        .shopcarSheet .content .van-stepper {
+            float: right;
+        }
+
+        .shopcarSheet .content .van-button {
             position: absolute;
             top: 15rem;
             left: 0;
@@ -327,7 +370,6 @@
                 </van-field>
             </div>
         </div>
-
         <div class="goodsAction">
             <div class="goodsIcon">
                 <div class="thumb-circle" @click="thumbCircleResponse">
@@ -343,11 +385,11 @@
                     <span>购物车</span>
                 </div>
             </div>
-            <van-button color="linear-gradient(to right, #ff6034, #ee0a24)" round>
+            <van-button color="linear-gradient(to right, #ff6034, #ee0a24)" round @click="buy">
                 我想要
             </van-button>
-            <div class="sheet">
-                <van-action-sheet v-model="ifSheetShow" title="商品规格">
+            <div class="shopcarSheet">
+                <van-action-sheet v-model="ifShopcarSheetShow" title="商品规格">
                     <div class="content">
                         <img :src="goodInfo.imgurl[0]" alt="商品图片">
                         <div class="right">
@@ -356,11 +398,27 @@
                         </div>
                         <div class="countSliper">
                             <span>选择数量</span>
-                            <van-stepper v-model="count" />
+                            <van-stepper v-model="shopcarCount" />
                         </div>
                         <van-button color="linear-gradient(to right, #ff6034, #ee0a24)" size="large" block round
                             @click="joinShopcar">加入购物车
                         </van-button>
+                    </div>
+                </van-action-sheet>
+            </div>
+            <div class="buySheet">
+                <van-action-sheet v-model="ifBuySheetShow" title="确认信息">
+                    <div class="content">
+                        <img :src="goodInfo.imgurl[0]" alt="商品图片">
+                        <div class="right">
+                            <span>￥{{goodInfo.prize}}</span>
+                            <p>{{goodInfo.good}}</p>
+                        </div>
+                        <div class="countSliper">
+                            <span>选择数量</span>
+                            <van-stepper v-model="buyCount" />
+                        </div>
+                        <van-address-edit :area-list="areaList" show-set-default save-button-text="购买" @save="pay" />
                     </div>
                 </van-action-sheet>
             </div>
@@ -381,8 +439,11 @@
             comment: [],
             message: "",
             rate: "0",
-            ifSheetShow: false,
-            count: "1"
+            ifShopcarSheetShow: false,
+            ifBuySheetShow: false,
+            shopcarCount: "1",
+            buyCount: "1",
+            areaList: {}
         },
         methods: {
             goToGroud: function () {
@@ -401,7 +462,7 @@
             },
             cartResponse: function () {
                 if (this.cartName === "cart-o") {
-                    this.ifSheetShow = true;
+                    this.ifShopcarSheetShow = true;
                 }
                 else {
                     this.cartName = "cart-o";
@@ -480,7 +541,7 @@
                 let info = this.goodInfo.info;
                 let prize = this.goodInfo.prize;
                 let imgurl = this.goodInfo.imgurl[0];
-                let count = this.count;
+                let count = this.shopcarCount;
                 let newShopcar = {
                     good,
                     info,
@@ -495,7 +556,7 @@
                 }))
                     .then(function (response) {
                         vant.Toast('成功加入购物车！');
-                        that.ifSheetShow = false;
+                        that.ifShopcarSheetShow = false;
                         if (that.cartName === "cart-o") {
                             that.cartName = "cart";
                             that.cartIconColor = "#F21F28";
@@ -504,6 +565,50 @@
                     })
                     .catch(function (error) {
                         vant.Toast.fail('加入购物车失败！');
+                        console.log(error);
+                    });
+            },
+            // 确认购买信息
+            buy: function () {
+                this.ifBuySheetShow = true;
+            },
+            // 加入购买历史
+            pay: function () {
+                const logonUserId = sessionStorage.getItem("id");
+                let good = this.goodInfo.good;
+                let info = this.goodInfo.info;
+                let prize = this.goodInfo.prize;
+                let imgurl = this.goodInfo.imgurl[0];
+                // 获取当前时间的字符串
+                let year = new Date().getFullYear().toString();
+                let month = (new Date().getMonth() + 1).toString();
+                let day = new Date().getDate().toString();
+                if (month < 10) {
+                    month = "0" + month;
+                }
+                if (day < 10) {
+                    day = "0" + day;
+                }
+                let time = year + "-" + month + "-" + day;
+                let count = this.buyCount;
+                let newHistory = {
+                    good,
+                    info,
+                    prize,
+                    imgurl,
+                    time,
+                    count
+                }
+                axios.post("http://localhost:5502/historyUpdate", Qs.stringify({
+                    id: logonUserId,
+                    history: [newHistory]
+                }))
+                    .then(function (response) {
+                        vant.Toast('购买成功!');
+                        console.log(response.data);
+                    })
+                    .catch(function (error) {
+                        vant.Toast.fail('购买失败!');
                         console.log(error);
                     });
             }
@@ -525,6 +630,9 @@
                         break;
                     }
                 }
+            });
+            axios.get("../js/areaList.json").then(res => {
+                this.areaList = res.data;
                 vant.Toast.clear;
             })
         }

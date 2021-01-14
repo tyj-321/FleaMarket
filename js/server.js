@@ -159,9 +159,59 @@ app.all('*', function(req, res, next) {             //设置跨域访问
       }
       db.close();
     });
-    
     res.status(200);
-    res.json("shopcar update successfully");
+    res.json("shopcar delete successfully");
+});
+
+ // 消费历史新增
+ app.post('/historyUpdate', function(req, res) {
+    var where = {
+      "user.id": req.body.id
+    };
+    console.log(where);
+    var newHistory = {
+      "history": req.body.history
+    };
+    console.log(newHistory);
+    console.log(newHistory.history.length);
+    MongoClient.connect(url, function(err,db){
+      if (err) throw err;
+      console.log("数据库已经连接!");
+      var dbName = db.db("Flea-Market");
+      for(let i = newHistory.history.length-1;i>=0;i--){
+      dbName.collection("User").updateOne(where, {$push:{"history":newHistory.history[i]}}, function(err, res){
+        if (err) throw err;
+        console.log("向数据库中更新消费历史数据成功");
+      });
+    }
+      db.close();
+    });
+    res.status(200);
+    res.json("history update successfully");
+});
+
+ // 消费历史删除
+ app.post('/historyDelete', function(req, res) {
+    var where = {
+      "user.id": req.body.id
+    };
+    console.log(where);
+    var deleteHistory = {
+      "history": req.body.history
+    };
+    console.log(deleteHistory);
+    MongoClient.connect(url, function(err,db){
+      if (err) throw err;
+      console.log("数据库已经连接!");
+      var dbName = db.db("Flea-Market");
+        dbName.collection("User").updateOne(where, {$pull:deleteHistory}, function(err, res){
+        if (err) throw err;
+        console.log("向数据库中删除消费历史数据成功");
+      });
+      db.close();
+    });
+    res.status(200);
+    res.json("history delete successfully");
 });
 
  //配置服务端口
