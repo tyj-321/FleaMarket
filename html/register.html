@@ -130,6 +130,7 @@
                     }))
                         .then(function (response) {
                             vant.Toast.success('注册成功！');
+                            window.location.href = "./login.html";
                             console.log(response.data);
                         })
                         .catch(function (error) {

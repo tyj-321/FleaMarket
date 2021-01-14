@@ -295,7 +295,7 @@
                 <span>·</span>
                 <span>{{comment.length}}</span>
                 <ul>
-                    <li v-for="item in reverseComment" :key="item">
+                    <li v-for="item in comment" :key="item">
                         <img :src="item.headurl" alt="用户头像">
                         <van-panel :title="item.name" :status="item.rate + '分'">
                             <div class="content">{{item.content}}</div>
@@ -383,11 +383,6 @@
             rate: "0",
             ifSheetShow: false,
             count: "1"
-        },
-        computed: {
-            reverseComment: function () {
-                return this.comment.reverse();
-            }
         },
         methods: {
             goToGroud: function () {
@@ -525,7 +520,7 @@
                 for (let i = res.data.length - 1; i >= 0; i--) {
                     if (i === 10 - index) {
                         this.goodInfo = res.data[i];
-                        this.comment = res.data[i].comment;
+                        this.comment = res.data[i].comment.reverse();
                         console.log(this.goodInfo);
                         break;
                     }
