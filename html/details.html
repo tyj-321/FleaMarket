@@ -267,6 +267,17 @@
             float: right;
         }
 
+        .buySheet .content .total p {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .buySheet .content .total p span {
+            color: red;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
         .shopcarSheet .content .countSliper {
             margin-top: 0.8rem;
         }
@@ -418,6 +429,9 @@
                             <span>选择数量</span>
                             <van-stepper v-model="buyCount" />
                         </div>
+                        <div class="total">
+                            <p>总金额：<span>￥{{total}}</span></p>
+                        </div>
                         <van-address-edit :area-list="areaList" show-set-default save-button-text="购买" @save="pay" />
                     </div>
                 </van-action-sheet>
@@ -444,6 +458,11 @@
             shopcarCount: "1",
             buyCount: "1",
             areaList: {}
+        },
+        computed: {
+            total: function () {
+                return this.buyCount * this.goodInfo.prize;
+            }
         },
         methods: {
             goToGroud: function () {

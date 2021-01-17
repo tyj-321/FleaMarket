@@ -80,28 +80,32 @@
             vertical-align: top;
         }
 
+        .buySheet .content p span {
+            color: red;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
         .buySheet .content .right {
             display: inline-block;
         }
 
-        .buySheet .content .right span {
+        .buySheet .content .right :first-child {
             color: red;
             font-size: 2rem;
             font-weight: 600;
+        }
+
+        .buySheet .content .right :nth-child(2) {
+            color: silver;
+            font-size: 0.5rem;
+            font-weight: 400;
         }
 
         .buySheet .content .right p {
             font-size: 1.5rem;
             color: #969799;
             font-weight: 700;
-        }
-
-        .buySheet .content .countSliper {
-            margin-top: 0.8rem;
-        }
-
-        .buySheet .content .van-stepper {
-            float: right;
         }
     </style>
 </head>
@@ -144,14 +148,12 @@
                                 <img :src="item.imgurl" alt="商品图片">
                                 <div class="right">
                                     <span>￥{{item.prize}}</span>
+                                    <span>×{{item.count}}</span>
                                     <p>{{item.good}}</p>
-                                </div>
-                                <div class="countSliper">
-                                    <span>选择数量</span>
-                                    <van-stepper v-model="buyCount" />
                                 </div>
                             </li>
                         </ul>
+                        <p> 总金额：<span>￥{{total/100}}</span></p>
                         <van-address-edit :area-list="areaList" show-set-default save-button-text="购买" @save="pay" />
                     </div>
                 </van-action-sheet>
@@ -189,7 +191,6 @@
             ifManage: false,
             navbarRightText: "管理",
             ifBuySheetShow: false,
-            buyCount: "1",
             areaList: {}
         },
         computed: {
