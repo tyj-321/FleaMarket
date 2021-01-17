@@ -181,7 +181,7 @@
                 <p class="signContent" v-if="userInfo.user.sign != undefined">{{userInfo.user.sign}}</p>
                 <p class="signContent" v-else>这个用户很神秘哦，什么也没有留下</p>
             </div>
-            <div class="history" v-if="history != undefined">
+            <div class="history" v-if="history.length != 0">
                 <h2>消费历史</h2>
                 <ul>
                     <li v-for="(item,index) in history" :key="item">
@@ -204,7 +204,7 @@
                     </li>
                 </ul>
             </div>
-            <div class="noHistory" v-else>
+            <div class="noHistory" v-else-if="history.length === 0 || history === undefined">
                 <h2>无消费历史</h2>
                 <img src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fww4.sinaimg.cn%2Flarge%2F006APoFYjw1f8oc8dqnmvj308c08cglu.jpg&refer=http%3A%2F%2Fwww.sina.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1612342016&t=e885132148b41953dce1afc37f5871f9"
                     alt="这里什么也没有">

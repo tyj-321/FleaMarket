@@ -599,12 +599,14 @@
                     time,
                     count
                 }
+                let that = this;
                 axios.post("http://localhost:5502/historyUpdate", Qs.stringify({
                     id: logonUserId,
                     history: [newHistory]
                 }))
                     .then(function (response) {
                         vant.Toast('购买成功!');
+                        that.ifBuySheetShow = false;
                         console.log(response.data);
                     })
                     .catch(function (error) {

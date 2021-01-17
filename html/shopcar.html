@@ -111,7 +111,7 @@
         <div class="navbar">
             <van-nav-bar left-text="购物车" :right-text="navbarRightText" @click-right="manageShops" fixed placeholder />
         </div>
-        <div class="goodInfo" v-if="shopcar != undefined">
+        <div class="goodInfo" v-if="shopcar.length != 0">
             <h2>全部商品</h2>
             <ul>
                 <li v-for="(item,index) in reverseShopcar" :key="item">
@@ -157,7 +157,7 @@
                 </van-action-sheet>
             </div>
         </div>
-        <div class="noGoodInfo" v-else>
+        <div class="noGoodInfo" v-else-if="shopcar.length === 0 || shopcar === undefined">
             <img src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fa.mayouwang.com%2Faddons%2Fmihua_mall%2Frecouse%2Fimages%2Femptycart.png&refer=http%3A%2F%2Fa.mayouwang.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1612518225&t=6829eafe5525bdd22f26eb762a25e6b8"
                 alt="购物车空空如也">
             <h4>你的购物车空空如也</h4>
@@ -304,7 +304,12 @@
             },
             // 确认购买
             buy: function () {
-                this.ifBuySheetShow = true;
+                if (this.checkResult.length != 0) {
+                    this.ifBuySheetShow = true;
+                }
+                else {
+                    vant.Toast('请选择商品！');
+                }
             },
             // 加入购买历史
             pay: function () {
@@ -324,12 +329,27 @@
                 for (let i = newHistory.length - 1; i >= 0; i--) {
                     newHistory[i].time = time;
                 }
+                let that = this;
                 axios.post("http://localhost:5502/historyUpdate", Qs.stringify({
                     id: logonUserId,
                     history: newHistory
                 }))
                     .then(function (response) {
-                        vant.Toast('购买成功!');
+                        that.ifBuySheetShow = false;
+                        for (let i = that.checkResult.length - 1; i >= 0; i--) {
+                            delete that.checkResult[i].time;
+                        }
+                        axios.post("http://localhost:5502/shopcarDelete", Qs.stringify({
+                            id: logonUserId,
+                            shopcar: that.checkResult
+                        }))
+                            .then(function (response) {
+                                vant.Toast('购买成功!');
+                                console.log(response.data);
+                            })
+                            .catch(function (error) {
+                                console.log(error);
+                            });
                         console.log(response.data);
                     })
                     .catch(function (error) {
