@@ -197,7 +197,7 @@
                             </div>
                             <template #footer>
                                 <div class="deleteBtn">
-                                    <van-button type="danger" round @click="deleteHistory(item)">删除</van-button>
+                                    <van-button type="danger" round @click="deleteHistory(item,index)">删除</van-button>
                                 </div>
                             </template>
                         </van-panel>
@@ -291,15 +291,16 @@
                 sessionStorage.clear();
                 window.location.href = "./login.html";
             },
-            deleteHistory: function (item) {
-                console.log(item);
+            deleteHistory: function (item,index) {
                 const logonUserId = sessionStorage.getItem("id");
+                let that = this;
                 axios.post("http://localhost:5502/historyDelete", Qs.stringify({
                     id: logonUserId,
                     history: item
                 }))
                     .then(function (response) {
-                        vant.Toast('删除成功！请刷新查看');
+                        that.history.splice(index,1);
+                        vant.Toast('删除成功！');
                         console.log(response.data);
                     })
                     .catch(function (error) {
