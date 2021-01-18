@@ -122,11 +122,9 @@
                     <van-checkbox-group v-model="checkResult" @change="singleGoodChecked">
                         <van-checkbox :name="item"></van-checkbox>
                     </van-checkbox-group>
-                    <van-card :price="item.prize" :desc="item.info" :title="item.good" :thumb="item.imgurl">
-                        <template #footer>
-                            <van-stepper theme="round" button-size="22" disable-input :default-value="item.count"
-                                @plus="plusCount(index)" @minus="minusCount(index)" />
-                        </template>
+                    <van-card :price="item.prize" :desc="item.info" :title="item.good" :thumb="item.imgurl"
+                        :num="item.count">
+
                     </van-card>
                 </li>
             </ul>
@@ -187,11 +185,14 @@
             meIcon: "manager-o",
             ifAllChecked: false,
             shopcar: [],
+            originalShopcar: [],
             checkResult: [],
             ifManage: false,
             navbarRightText: "管理",
             ifBuySheetShow: false,
-            areaList: {}
+            areaList: {},
+            // // 用一个数组来放已经改变了数量的shopcar下标
+            // changed: []
         },
         computed: {
             total: function () {
@@ -252,12 +253,6 @@
             goToMe: function () {
                 window.location.href = "./me.html";
             },
-            plusCount: function (index) {
-                this.shopcar[index].count++;
-            },
-            minusCount: function (index) {
-                this.shopcar[index].count--;
-            },
             singleGoodChecked: function () {
                 if (this.checkResult.length === this.shopcar.length) {
                     this.ifAllChecked = true;
@@ -291,9 +286,6 @@
                 }
                 else {
                     const logonUserId = sessionStorage.getItem("id");
-                    console.log(this.checkResult);
-                    console.log(this.shopcar);
-                    console.log(this.reverseShopcar);
                     axios.post("http://localhost:5502/shopcarDelete", Qs.stringify({
                         id: logonUserId,
                         shopcar: this.checkResult
@@ -347,7 +339,8 @@
                         }
                         axios.post("http://localhost:5502/shopcarDelete", Qs.stringify({
                             id: logonUserId,
-                            shopcar: that.checkResult
+                            shopcar: that.checkResult,
+
                         }))
                             .then(function (response) {
                                 vant.Toast('购买成功!');
@@ -378,6 +371,7 @@
                     let id = userInfo[i].user.id;
                     if (logonUserId === id) {
                         this.shopcar = userInfo[i].shopcar.reverse();
+                        console.log(this.shopcar);
                         break;
                     }
                 }
