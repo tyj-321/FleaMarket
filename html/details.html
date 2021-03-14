@@ -78,6 +78,16 @@
             display: inline-block;
         }
 
+        .publisherInfo .phone {
+            display: inline-block;
+            margin-left: 2rem;
+        }
+
+        .publisherInfo .phone .publisherPhone {
+            font-size: 1rem;
+            color: #1D82FE;
+        }
+
         .publisherInfo .publisherCredit {
             font-size: 0.6rem;
         }
@@ -313,6 +323,10 @@
                         <span>{{goodInfo.time}}</span>
                         <span>发布于{{goodInfo.city}}</span>
                     </p>
+                </div>
+                <div class="phone">
+                    <van-icon name="phone" color="#1D82FE" size="20px" />
+                    <span class="publisherPhone">{{goodInfo.publisher.phone}}</span>
                 </div>
             </div>
             <div>
@@ -644,7 +658,7 @@
             axios.get("http://localhost:5502/getGroundInfo").then(res => {
                 let index = sessionStorage.getItem("index");
                 for (let i = res.data.length - 1; i >= 0; i--) {
-                    if (i === 10 - index) {
+                    if (i === res.data.length - 1 - index) {
                         this.goodInfo = res.data[i];
                         this.comment = res.data[i].comment.reverse();
                         console.log(this.goodInfo);

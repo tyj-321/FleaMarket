@@ -27,7 +27,7 @@
 
         #app .footer {
             width: 100%;
-            height: 15rem;
+            height: 12rem;
             background-image: url("../src/footer.jpg");
             background-size: cover;
         }
@@ -72,6 +72,11 @@
                         size="large" input-align="center" label-align="center" label-class="iconfont" clearable
                         :error-message="passwordErrorMsg" :error="ifPasswordEmpty" />
                 </van-cell-group>
+                <van-cell-group>
+                    <van-field v-model="phone" type="tel" label="&#xe621;手机" placeholder="请输入手机号" required size="large"
+                        input-align="center" label-align="center" label-class="iconfont" clearable
+                        :error-message="passwordErrorMsg" :error="ifPhoneEmpty" />
+                </van-cell-group>
             </div>
             <div class="btns">
                 <div class="loginbtn">
@@ -93,9 +98,11 @@
             name: "",
             id: "",
             password: "",
+            phone: "",
             nameErrorMsg: "",
             idErrorMsg: "",
             passwordErrorMsg: "",
+            ifPhoneEmpty: false,
             ifNameEmpty: false,
             ifIdEmpty: false,
             ifPasswordEmpty: false
@@ -115,12 +122,16 @@
                 else if (this.password === "") {
                     this.ifPasswordEmpty = true;
                 }
+                else if (this.ifPhoneEmpty === "") {
+                    this.ifPhoneEmpty = true;
+                }
                 else {
                     axios.post("http://localhost:5502/userRegister", Qs.stringify({
                         user: {
                             id: this.id,
                             name: this.name,
                             password: this.password,
+                            phone: this.phone,
                             headurl: "http://pic.51yuansu.com/pic3/cover/01/69/80/595f67c2aff1e_610.jpg"
                         },
                         support: "0",
