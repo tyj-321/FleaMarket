@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="../css/iconfont.css" />
     <style type="text/css">
         .search {
-            position: sticky;
+            display: block;
             top: 0;
             z-index: 10;
         }
@@ -100,28 +100,33 @@
 
 <body>
     <div id="app">
-        <div class="search">
-            <van-search v-model="searchValue" placeholder="请输入搜索关键词" shape="round" />
-        </div>
-        <div class="groudInfo">
-            <ul>
-                <li v-for="(item,index) in vagueSearchList" :key=item @click="goToDetails(index)">
-                    <img :src="item.imgurl[0]">
-                    <div class="content">
-                        <h4>{{item.good}}</h4>
-                        <p>{{item.info}}</p>
-                        <span class="prize">￥{{item.prize}}</span>
-                        <span class="want">{{item.want}}人想要</span>
-                        <img class="publisherHead" :src="item.publisher.headurl">
-                        <span class="publishName">{{item.publisher.name}}</span>
-                        <div class="credit">
-                            <van-icon name="fire" color="#1D82FE" />
-                            <span>信用{{item.publisher.credit}}</span>
-                        </div>
-                    </div>
-                </li>
-            </ul>
-        </div>
+        <van-tabs v-model="headTabActive" animated>
+            <van-tab title="广场">
+                <div class="search">
+                    <van-search v-model="searchValue" placeholder="请输入搜索关键词" shape="round" />
+                </div>
+                <div class="groudInfo">
+                    <ul>
+                        <li v-for="(item,index) in vagueSearchList" :key=item @click="goToDetails(index)">
+                            <img :src="item.imgurl[0]">
+                            <div class="content">
+                                <h4>{{item.good}}</h4>
+                                <p>{{item.info}}</p>
+                                <span class="prize">￥{{item.prize}}</span>
+                                <span class="want">{{item.want}}人想要</span>
+                                <img class="publisherHead" :src="item.publisher.headurl">
+                                <span class="publishName">{{item.publisher.name}}</span>
+                                <div class="credit">
+                                    <van-icon name="fire" color="#1D82FE" />
+                                    <span>信用{{item.publisher.credit}}</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </van-tab>
+            <van-tab title="推荐">内容 2</van-tab>
+        </van-tabs>
         <div class="footer">
             <van-tabbar v-model="tabActive" active-color="#DF5523" @change="tabChange">
                 <van-tabbar-item :icon="fleaIcon">跳蚤</van-tabbar-item>
@@ -130,7 +135,6 @@
                 <van-tabbar-item :icon="meIcon" @click="goToMe">我的</van-tabbar-item>
             </van-tabbar>
         </div>
-
     </div>
 </body>
 <script>
@@ -138,6 +142,7 @@
         el: '#app',
         data: {
             searchValue: "",
+            headTabActive: 0,
             tabActive: 0,
             fleaIcon: "hot",
             publishIcon: "share-o",
@@ -194,7 +199,7 @@
             goToMe: function () {
                 window.location.href = "./me.html";
             },
-            goToDetails: function(index){
+            goToDetails: function (index) {
                 console.log(this.groudList);
                 window.location.href = "./details.html";
                 sessionStorage.setItem("index", index);
