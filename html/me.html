@@ -330,9 +330,6 @@
             },
             // 点击弹出框的确认按钮时的事件
             confirm: function (item, index) {
-                console.log("1");
-                console.log(this.gradeCheckItem);
-                console.log(this.gradeCheckIndex);
                 const logonUserId = sessionStorage.getItem("id");
                 let that = this;
                 axios.post("http://localhost:5502/gradeUpdate", Qs.stringify({

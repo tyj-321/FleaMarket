@@ -125,7 +125,7 @@
                     </ul>
                 </div>
             </van-tab>
-            <van-tab title="推荐">内容 2</van-tab>
+            <van-tab title="推荐">{{recommendList}}</van-tab>
         </van-tabs>
         <div class="footer">
             <van-tabbar v-model="tabActive" active-color="#DF5523" @change="tabChange">
@@ -148,12 +148,25 @@
             publishIcon: "share-o",
             shopcarIcon: "shopping-cart-o",
             meIcon: "manager-o",
-            groudList: []
+            groudList: [],
+            userInfo: []
         },
         computed: {
             // 模糊查询
             vagueSearchList: function () {
                 return this.groudList.filter(item => item.good.includes(this.searchValue));
+            },
+            // 通过皮尔逊相关系数算法计算用户间的相似度，获得推荐列表
+            recommendList: function () {
+                let gradeObj = {};
+                for (let i = 0; i < this.userInfo.length; i++) {
+                    
+                    if(this.userInfo[i].grade === undefined){
+                        continue;
+                    }
+                    gradeObj[this.userInfo[i].user.name] = this.userInfo[i].grade;
+                }
+                return gradeObj;
             }
         },
         methods: {
@@ -215,6 +228,10 @@
             axios.get("http://localhost:5502/getGroundInfo").then(res => {
                 vant.Toast.clear;
                 this.groudList = res.data.reverse();
+            });
+            axios.get("http://localhost:5502/getUserInfo").then(res => {
+                this.userInfo = res.data;
+                console.log(this.userInfo);
             })
         }
     })
