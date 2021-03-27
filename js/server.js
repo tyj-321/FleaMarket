@@ -214,6 +214,30 @@ app.all('*', function(req, res, next) {             //设置跨域访问
     res.json("history delete successfully");
 });
 
+// 评分新增
+ app.post('/gradeUpdate', function(req, res) {
+    var where = {
+      "user.id": req.body.id
+    };
+    console.log(where);
+    var newGrade = {
+      "grade": req.body.grade
+    };
+    console.log(newGrade);
+    MongoClient.connect(url, function(err,db){
+      if (err) throw err;
+      console.log("数据库已经连接!");
+      var dbName = db.db("Flea-Market");
+      dbName.collection("User").updateOne(where, {$push:{"grade":newGrade.grade}}, function(err, res){
+        if (err) throw err;
+        console.log("向数据库中更新消费历史数据成功");
+      });
+      db.close();
+    });
+    res.status(200);
+    res.json("grade update successfully");
+});
+
  //配置服务端口
 var server = app.listen(5502,function(){
     console.log('listen at http://localhost:5502');

@@ -197,6 +197,7 @@
                             </div>
                             <template #footer>
                                 <div class="deleteBtn">
+                                    <van-button type="primary" round @click="grade(item,index)">评分</van-button>
                                     <van-button type="danger" round @click="deleteHistory(item,index)">删除</van-button>
                                 </div>
                             </template>
@@ -204,6 +205,10 @@
                     </li>
                 </ul>
             </div>
+            <!-- 这个是评分的弹出框 -->
+            <van-dialog v-model="ifGradeShow" title="评分" show-cancel-button @cancel="cancel" @confirm="confirm">
+                <van-rate v-model="scroe" allow-half />
+            </van-dialog>
             <div class="noHistory" v-else-if="history.length === 0 || history === undefined">
                 <h2>无消费历史</h2>
                 <img src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fww4.sinaimg.cn%2Flarge%2F006APoFYjw1f8oc8dqnmvj308c08cglu.jpg&refer=http%3A%2F%2Fwww.sina.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1612342016&t=e885132148b41953dce1afc37f5871f9"
@@ -232,6 +237,10 @@
             shopcarIcon: "shopping-cart-o",
             meIcon: "manager",
             ifDialogShow: false,
+            ifGradeShow: false,
+            scroe: 0,
+            gradeCheckItem: {},   //评分选中的商品信息
+            gradeCheckIndex: 0,   //评分选中的商品下标
             userInfo: {},
             history: []
         },
@@ -291,7 +300,8 @@
                 sessionStorage.clear();
                 window.location.href = "./login.html";
             },
-            deleteHistory: function (item,index) {
+            // 删除历史事件
+            deleteHistory: function (item, index) {
                 const logonUserId = sessionStorage.getItem("id");
                 let that = this;
                 axios.post("http://localhost:5502/historyDelete", Qs.stringify({
@@ -299,7 +309,7 @@
                     history: item
                 }))
                     .then(function (response) {
-                        that.history.splice(index,1);
+                        that.history.splice(index, 1);
                         vant.Toast('删除成功！');
                         console.log(response.data);
                     })
@@ -307,6 +317,37 @@
                         vant.Toast.fail('删除失败');
                         console.log(error);
                     });
+            },
+            // 点击评分时弹出评分的信息框
+            grade: function (item, index) {
+                this.ifGradeShow = true;
+                this.gradeCheckItem = item;
+                this.gradeCheckIndex = index;
+            },
+            // 点击弹出框的取消按钮时的事件
+            cancel: function () {
+                this.scroe = 0;
+            },
+            // 点击弹出框的确认按钮时的事件
+            confirm: function (item, index) {
+                console.log("1");
+                console.log(this.gradeCheckItem);
+                console.log(this.gradeCheckIndex);
+                const logonUserId = sessionStorage.getItem("id");
+                let that = this;
+                axios.post("http://localhost:5502/gradeUpdate", Qs.stringify({
+                    id: logonUserId,
+                    grade: this.scroe
+                }))
+                    .then(function (response) {
+                        vant.Toast('评分成功！');
+                        console.log(response.data);
+                    })
+                    .catch(function (error) {
+                        vant.Toast.fail('评分失败');
+                        console.log(error);
+                    });
+                this.scroe = 0;    
             }
         },
         beforeMount: function () {
