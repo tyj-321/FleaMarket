@@ -158,15 +158,63 @@
             },
             // 通过皮尔逊相关系数算法计算用户间的相似度，获得推荐列表
             recommendList: function () {
+                let currentUserId = sessionStorage.getItem("id");
                 let gradeObj = {};
+                let currentUser = {};
+                let a = [2, 3, 2, 3, 4];
+                let b = [3, 4, 5, 4, 3];
+                // 声明一个皮尔逊相关计算函数
+                const PearsonSimilarity = function (array1, array2) {
+                    // 两个数组的和
+                    let sumArray1 = 0;
+                    let sumArray2 = 0;
+                    // 两个数组的平均值
+                    let averageArray1 = 0;
+                    let averageArray2 = 0;
+                    // 两个数组的平均差数组
+                    let meanDeviationArray1 = [];
+                    let meanDeviationArray2 = [];
+                    let numerator = 0;                 //分子
+                    let denominator = 0;               //分母
+                    // 两个数组的平方差
+                    let sumSquareDeviation1 = 0;
+                    let sumSquareDeviation2 = 0;
+                    for (let i = array1.length - 1; i >= 0; i--) {
+                        sumArray1 += array1[i];
+                    }
+                    for (let j = array2.length - 1; j >= 0; j--) {
+                        sumArray2 += array2[j];
+                    }
+                    averageArray1 = (sumArray1 / array1.length).toFixed(2);
+                    averageArray2 = (sumArray2 / array2.length).toFixed(2);
+                    for (let p = array1.length - 1; p >= 0; p--) {
+                        meanDeviationArray1.push(parseFloat((array1[p] - averageArray1).toFixed(2)));
+                    }
+                    for (let q = array1.length - 1; q >= 0; q--) {
+                        meanDeviationArray2.push(parseFloat((array2[q] - averageArray2).toFixed(2)));
+                    }
+                    for (let m = meanDeviationArray1.length-1; m >= 0; m--) {
+                        numerator += meanDeviationArray1[m] * meanDeviationArray2[m];
+                    }
+                    for (let n = meanDeviationArray1.length-1; n >= 0; n--) {
+                        sumSquareDeviation1 += Math.pow(meanDeviationArray1[n], 2);
+                        sumSquareDeviation2 += Math.pow(meanDeviationArray2[n], 2);
+                        denominator = Math.pow(sumSquareDeviation1 * sumSquareDeviation2, 1 / 2);
+                    }
+                    return (numerator/denominator).toFixed(2);
+                }
                 for (let i = 0; i < this.userInfo.length; i++) {
-                    
-                    if(this.userInfo[i].grade === undefined){
+                    if (this.userInfo[i].grade === undefined) {
+                        continue;
+                    }
+                    if (currentUserId === this.userInfo[i].user.id) {
+                        currentUser[this.userInfo[i].user.name] = this.userInfo[i].grade;
                         continue;
                     }
                     gradeObj[this.userInfo[i].user.name] = this.userInfo[i].grade;
                 }
-                return gradeObj;
+
+                return PearsonSimilarity(a, b);
             }
         },
         methods: {
