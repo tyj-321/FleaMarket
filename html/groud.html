@@ -158,11 +158,11 @@
             },
             // 通过皮尔逊相关系数算法计算用户间的相似度，获得推荐列表
             recommendList: function () {
+                // 这个对象数组包含最后所有的用户对应的皮尔逊相关系数
+                let pearsonArray = [];
                 let currentUserId = sessionStorage.getItem("id");
                 let gradeObj = {};
                 let currentUser = {};
-                let a = [2, 3, 2, 3, 4];
-                let b = [3, 4, 5, 4, 3];
                 // 声明一个皮尔逊相关计算函数
                 const PearsonSimilarity = function (array1, array2) {
                     // 两个数组的和
@@ -193,28 +193,51 @@
                     for (let q = array1.length - 1; q >= 0; q--) {
                         meanDeviationArray2.push(parseFloat((array2[q] - averageArray2).toFixed(2)));
                     }
-                    for (let m = meanDeviationArray1.length-1; m >= 0; m--) {
+                    for (let m = meanDeviationArray1.length - 1; m >= 0; m--) {
                         numerator += meanDeviationArray1[m] * meanDeviationArray2[m];
                     }
-                    for (let n = meanDeviationArray1.length-1; n >= 0; n--) {
+                    for (let n = meanDeviationArray1.length - 1; n >= 0; n--) {
                         sumSquareDeviation1 += Math.pow(meanDeviationArray1[n], 2);
                         sumSquareDeviation2 += Math.pow(meanDeviationArray2[n], 2);
                         denominator = Math.pow(sumSquareDeviation1 * sumSquareDeviation2, 1 / 2);
                     }
-                    return (numerator/denominator).toFixed(2);
+                    return Math.abs((numerator / denominator).toFixed(2));
+                }
+                // 声明一个可以把字符串类型的数组转化为数值类型的函数
+                const changeToNumber = function (array) {
+                    return array.map(Number);
                 }
                 for (let i = 0; i < this.userInfo.length; i++) {
+                    // 当没有grade属性的时直接跳过
                     if (this.userInfo[i].grade === undefined) {
                         continue;
                     }
-                    if (currentUserId === this.userInfo[i].user.id) {
-                        currentUser[this.userInfo[i].user.name] = this.userInfo[i].grade;
-                        continue;
+                    // 遍历并进行两两的皮尔逊相关系数计算
+                    else if (currentUserId === this.userInfo[i].user.id) {
+                        let currentUserGrade = this.userInfo[i].grade;
+                        for (let j = 0; j < this.userInfo.length; j++) {
+                            if (this.userInfo[j].grade != undefined && this.userInfo[j].user.id != currentUserId) {
+                                let value = PearsonSimilarity(changeToNumber(this.userInfo[j].grade), changeToNumber(currentUserGrade));
+                                pearsonArray.push({
+                                    "id": this.userInfo[j].user.id,
+                                    "value": value
+                                });
+                            }
+                        }
+                        break;
                     }
-                    gradeObj[this.userInfo[i].user.name] = this.userInfo[i].grade;
                 }
-
-                return PearsonSimilarity(a, b);
+                // 冒泡排序来把用户相似度降序排序
+                for (let i = 0; i < pearsonArray.length; i++) {
+                    for (let j = 0; j < pearsonArray.length - 1 - i; j++) {
+                        if (Object.values(pearsonArray[j])[1] < Object.values(pearsonArray[j + 1])[1]) {
+                            let temp = pearsonArray[j];
+                            pearsonArray[j] = pearsonArray[j + 1];
+                            pearsonArray[j + 1] = temp;
+                        }
+                    }
+                }
+                return pearsonArray;
             }
         },
         methods: {
