@@ -22,7 +22,8 @@
             z-index: 10;
         }
 
-        .groudInfo img {
+        .groudInfo img,
+        .recommendInfo img {
             width: 8rem;
             height: 10rem;
             margin-left: 1rem;
@@ -31,22 +32,26 @@
             vertical-align: top;
         }
 
-        .groudInfo li {
+        .groudInfo li,
+        .recommendInfo li {
             margin-bottom: 1.5rem;
             border-bottom: 0.1rem solid #eee;
         }
 
-        .groudInfo .content {
+        .groudInfo .content,
+        .recommendInfo .content {
             position: relative;
             display: inline-block;
             width: 14.5rem;
         }
 
-        .groudInfo .content h4 {
+        .groudInfo .content h4,
+        .recommendInfo .content h4 {
             margin: 0.2rem 0;
         }
 
-        .groudInfo .content p {
+        .groudInfo .content p,
+        .recommendInfo .content p {
             margin: 0.1rem 0;
             height: 2.7rem;
             font-size: 15px;
@@ -57,19 +62,22 @@
             -webkit-box-orient: vertical;
         }
 
-        .groudInfo .content .prize {
+        .groudInfo .content .prize,
+        .recommendInfo .content .prize {
             color: red;
             font-size: 1.3rem;
         }
 
-        .groudInfo .content .want {
+        .groudInfo .content .want,
+        .recommendInfo .content .want {
             float: right;
             margin-top: 0.6rem;
             color: gray;
             font-size: 0.5rem;
         }
 
-        .groudInfo .content .publisherHead {
+        .groudInfo .content .publisherHead,
+        .recommendInfo .content .publisherHead {
             position: absolute;
             top: 7.3rem;
             left: -1rem;
@@ -78,14 +86,16 @@
             border-radius: 2rem;
         }
 
-        .groudInfo .content .publishName {
+        .groudInfo .content .publishName,
+        .recommendInfo .content .publishName {
             font-size: 0.2rem;
             position: absolute;
             top: 8rem;
             left: 2.2rem;
         }
 
-        .groudInfo .content .credit {
+        .groudInfo .content .credit,
+        .recommendInfo .content .credit {
             font-size: 0.1rem;
             position: absolute;
             right: 0;
@@ -107,7 +117,7 @@
                 </div>
                 <div class="groudInfo">
                     <ul>
-                        <li v-for="(item,index) in vagueSearchList" :key=item @click="goToDetails(index)">
+                        <li v-for="(item,index) in vagueSearchList" :key=item @click="groudGoToDetails(item)">
                             <img :src="item.imgurl[0]">
                             <div class="content">
                                 <h4>{{item.good}}</h4>
@@ -125,7 +135,27 @@
                     </ul>
                 </div>
             </van-tab>
-            <van-tab title="推荐">{{recommendList}}</van-tab>
+            <van-tab title="推荐">
+                <div class="recommendInfo">
+                    <ul>
+                        <li v-for="(item,index) in recommendList" :key=item @click="recommendGoToDetails(item)">
+                            <img :src="item.imgurl[0]">
+                            <div class="content">
+                                <h4>{{item.good}}</h4>
+                                <p>{{item.info}}</p>
+                                <span class="prize">￥{{item.prize}}</span>
+                                <span class="want">{{item.want}}人想要</span>
+                                <img class="publisherHead" :src="item.publisher.headurl">
+                                <span class="publishName">{{item.publisher.name}}</span>
+                                <div class="credit">
+                                    <van-icon name="fire" color="#1D82FE" />
+                                    <span>信用{{item.publisher.credit}}</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </van-tab>
         </van-tabs>
         <div class="footer">
             <van-tabbar v-model="tabActive" active-color="#DF5523" @change="tabChange">
@@ -160,6 +190,10 @@
             recommendList: function () {
                 // 这个对象数组包含最后所有的用户对应的皮尔逊相关系数
                 let pearsonArray = [];
+                // 声明一个数组来存储要推荐的商品名称
+                let allGood = [];
+                // 声明一个包含推荐商品所有信息的对象数组
+                let recommendList = [];
                 let currentUserId = sessionStorage.getItem("id");
                 let gradeObj = {};
                 let currentUser = {};
@@ -237,7 +271,24 @@
                         }
                     }
                 }
-                return pearsonArray;
+                // 找到最相似的用户购物历史商品信息
+                for (let i = 0; i < this.userInfo.length; i++) {
+                    if (this.userInfo[i].user.id === pearsonArray[0].id) {
+                        for (let j = 0; j < this.userInfo[i].history.length; j++) {
+                            allGood.push(this.userInfo[i].history[j].good);
+                        }
+                    }
+                }
+                // 在广场中找到这些商品并生成商品数组，遍历出来即可展示到推荐
+                for (let i = 0; i < allGood.length; i++) {
+                    for (let j = 0; j < this.groudList.length; j++) {
+                        if (this.groudList[j].good === allGood[i]) {
+                            recommendList.push(this.groudList[j]);
+                            break;
+                        }
+                    }
+                }
+                return recommendList;
             }
         },
         methods: {
@@ -283,10 +334,14 @@
             goToMe: function () {
                 window.location.href = "./me.html";
             },
-            goToDetails: function (index) {
+            groudGoToDetails: function (item) {
                 console.log(this.groudList);
                 window.location.href = "./details.html";
-                sessionStorage.setItem("index", index);
+                sessionStorage.setItem("good", item.good);
+            },
+            recommendGoToDetails: function(item){
+                window.location.href = "./details.html";
+                sessionStorage.setItem("good", item.good);
             }
         },
         beforeMount: function () {

@@ -656,9 +656,9 @@
         },
         mounted: function () {
             axios.get("http://localhost:5502/getGroundInfo").then(res => {
-                let index = sessionStorage.getItem("index");
+                let good = sessionStorage.getItem("good");
                 for (let i = res.data.length - 1; i >= 0; i--) {
-                    if (i === res.data.length - 1 - index) {
+                    if (res.data[i].good === good) {
                         this.goodInfo = res.data[i];
                         this.comment = res.data[i].comment.reverse();
                         console.log(this.goodInfo);
