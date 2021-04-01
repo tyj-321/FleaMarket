@@ -78,6 +78,17 @@
                         :error-message="passwordErrorMsg" :error="ifPhoneEmpty" />
                 </van-cell-group>
             </div>
+            <div class="tags">
+                <div class="field">
+                    <van-field clickable label="标签" :placeholder="tag" @click="ifShowPicker = true" />
+                </div>
+                <div class="picker">
+                    <van-popup v-model="ifShowPicker" round position="bottom">
+                        <van-picker show-toolbar :columns="columns" @cancel="ifShowPicker = false"
+                            @confirm="tagConfirm" />
+                    </van-popup>
+                </div>
+            </div>
             <div class="btns">
                 <div class="loginbtn">
                     <van-button round type="primary" block @click.prevent="register">注册</van-button>
@@ -102,14 +113,35 @@
             nameErrorMsg: "",
             idErrorMsg: "",
             passwordErrorMsg: "",
+            tag: "点击选择",
             ifPhoneEmpty: false,
             ifNameEmpty: false,
             ifIdEmpty: false,
-            ifPasswordEmpty: false
+            ifPasswordEmpty: false,
+            ifShowPicker: false,
+            columns: [
+                {
+                    values: ["石油与天然气", "地球与科学", "机电工程", "化学化工", "材料科学与工程", "计算机科学", "电气信息", "土木工程",
+                        "理学", "经济管理", "法学", "马克思主义", "外国语", "体育学院", "艺术学院"],
+                    defaultIndex: 0
+                },
+                {
+                    values: ["绘画", "电竞", "动漫", "轮滑", "舞蹈", "音乐", "阅读", "跑步", "外语社", "跆拳道", "书法", "摄影", "桌游", "骑行", "篮球", "足球"],
+                    defaultIndex: 0
+                }
+            ],
+            tags: []
         },
         methods: {
             backToLogin: function () {
                 window.location.href = "./login.html";
+            },
+            // 确认标签
+            tagConfirm: function (values) {
+                this.tags = values;
+                this.ifShowPicker = false;
+                this.tag = values[0] + "," + values[1];
+                console.log(this.tags);
             },
             register: function () {
                 // 如果输入内容为空则红色字体提示用户
@@ -125,6 +157,9 @@
                 else if (this.ifPhoneEmpty === "") {
                     this.ifPhoneEmpty = true;
                 }
+                else if (this.tags.length === 0) {
+                    vant.Toast("请选择标签！");
+                }
                 else {
                     axios.post("http://localhost:5502/userRegister", Qs.stringify({
                         user: {
@@ -137,7 +172,8 @@
                         support: "0",
                         attention: "0",
                         fan: "0",
-                        city: "成都"
+                        city: "成都",
+                        tags: this.tags
                     }))
                         .then(function (response) {
                             vant.Toast.success('注册成功！');

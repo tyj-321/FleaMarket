@@ -84,6 +84,10 @@
             <van-number-keyboard v-model="keyboardValue" :show="ifKeyboardShow" theme="custom" extra-key="."
                 close-button-text="完成" @blur="ifKeyboardShow = false" />
         </div>
+        <!-- 打标签组件 -->
+        <div class="tags">
+            <van-picker show-toolbar title="选择标签" :columns="columns" @confirm="tagConfirm" @cancel="tagCancel"/>
+        </div>
         <div class="footer">
             <van-tabbar v-model="tabActive" active-color="#DF5523" @change="tabChange">
                 <van-tabbar-item :icon="fleaIcon" @click="goToGround">跳蚤</van-tabbar-item>
@@ -112,7 +116,19 @@
             ifGoodEmpty: false,
             ifInfoEmpty: false,
             ifShipChecked: false,
-            pulisherInfo: {}
+            pulisherInfo: {},
+            columns: [
+                {
+                    values: ["石油与天然气", "地球与科学", "机电工程", "化学化工", "材料科学与工程", "计算机科学", "电气信息", "土木工程",
+                        "理学", "经济管理", "法学", "马克思主义", "外国语", "体育学院", "艺术学院"],
+                    defaultIndex: 0
+                },
+                {
+                    values: ["绘画", "电竞", "动漫", "轮滑", "舞蹈", "音乐", "阅读", "跑步", "外语社", "跆拳道", "书法", "摄影", "桌游", "骑行", "篮球", "足球"],
+                    defaultIndex: 0
+                }
+            ],
+            tags: []
         },
         methods: {
             // 当点击的标签出现变化时，判断是哪一个标签，并把样式修改一下
@@ -168,6 +184,16 @@
                 this.ifKeyboardShow = true;
                 this.keyboardValue = ""
             },
+            // 打标签确认
+            tagConfirm: function (values) {
+                this.tags = values;
+                console.log(this.tags);
+            },
+            // 取消打标签
+            tagCancel: function () {
+                this.tags = [];
+                console.log(this.tags);
+            },
             publish: function () {
                 // 发布的信息同步到数据库
                 if (this.good === "") {
@@ -181,6 +207,9 @@
                 }
                 else if (this.keyboardValue === "" || this.keyboardValue === "0.00") {
                     vant.Toast('价格不对！');
+                }
+                else if (this.tags.length === 0){
+                    vant.Toast("请选择标签！");
                 }
                 else {
                     vant.Toast.loading({
@@ -228,7 +257,8 @@
                         browse: "0",
                         imgurl: imgurl,
                         city: "成都",
-                        logistics: logistics
+                        logistics: logistics,
+                        tags: this.tags
                     }))
                         .then(function (response) {
                             vant.Toast.clear;

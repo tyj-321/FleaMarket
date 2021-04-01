@@ -179,7 +179,9 @@
             shopcarIcon: "shopping-cart-o",
             meIcon: "manager-o",
             groudList: [],
-            userInfo: []
+            userInfo: [],
+            userTags: [],
+            ifNewUser: false
         },
         computed: {
             // 模糊查询
@@ -188,103 +190,118 @@
             },
             // 通过皮尔逊相关系数算法计算用户间的相似度，获得推荐列表
             recommendList: function () {
-                // 这个对象数组包含最后所有的用户对应的皮尔逊相关系数
-                let pearsonArray = [];
-                // 声明一个数组来存储要推荐的商品名称
-                let allGood = [];
-                // 声明一个包含推荐商品所有信息的对象数组
                 let recommendList = [];
-                let currentUserId = sessionStorage.getItem("id");
-                let gradeObj = {};
-                let currentUser = {};
-                // 声明一个皮尔逊相关计算函数
-                const PearsonSimilarity = function (array1, array2) {
-                    // 两个数组的和
-                    let sumArray1 = 0;
-                    let sumArray2 = 0;
-                    // 两个数组的平均值
-                    let averageArray1 = 0;
-                    let averageArray2 = 0;
-                    // 两个数组的平均差数组
-                    let meanDeviationArray1 = [];
-                    let meanDeviationArray2 = [];
-                    let numerator = 0;                 //分子
-                    let denominator = 0;               //分母
-                    // 两个数组的平方差
-                    let sumSquareDeviation1 = 0;
-                    let sumSquareDeviation2 = 0;
-                    for (let i = array1.length - 1; i >= 0; i--) {
-                        sumArray1 += array1[i];
+                // 如果不是新用户，就用皮尔逊相似度算法计算用户相似度进行推荐
+                if (this.ifNewUser === false) {
+                    // 这个对象数组包含最后所有的用户对应的皮尔逊相关系数
+                    let pearsonArray = [];
+                    // 声明一个数组来存储要推荐的商品名称
+                    let allGood = [];
+                    // 声明一个包含推荐商品所有信息的对象数组
+
+                    let currentUserId = sessionStorage.getItem("id");
+                    let gradeObj = {};
+                    let currentUser = {};
+                    // 声明一个皮尔逊相关计算函数
+                    const PearsonSimilarity = function (array1, array2) {
+                        // 两个数组的和
+                        let sumArray1 = 0;
+                        let sumArray2 = 0;
+                        // 两个数组的平均值
+                        let averageArray1 = 0;
+                        let averageArray2 = 0;
+                        // 两个数组的平均差数组
+                        let meanDeviationArray1 = [];
+                        let meanDeviationArray2 = [];
+                        let numerator = 0;                 //分子
+                        let denominator = 0;               //分母
+                        // 两个数组的平方差
+                        let sumSquareDeviation1 = 0;
+                        let sumSquareDeviation2 = 0;
+                        for (let i = array1.length - 1; i >= 0; i--) {
+                            sumArray1 += array1[i];
+                        }
+                        for (let j = array2.length - 1; j >= 0; j--) {
+                            sumArray2 += array2[j];
+                        }
+                        averageArray1 = (sumArray1 / array1.length).toFixed(2);
+                        averageArray2 = (sumArray2 / array2.length).toFixed(2);
+                        for (let p = array1.length - 1; p >= 0; p--) {
+                            meanDeviationArray1.push(parseFloat((array1[p] - averageArray1).toFixed(2)));
+                        }
+                        for (let q = array1.length - 1; q >= 0; q--) {
+                            meanDeviationArray2.push(parseFloat((array2[q] - averageArray2).toFixed(2)));
+                        }
+                        for (let m = meanDeviationArray1.length - 1; m >= 0; m--) {
+                            numerator += meanDeviationArray1[m] * meanDeviationArray2[m];
+                        }
+                        for (let n = meanDeviationArray1.length - 1; n >= 0; n--) {
+                            sumSquareDeviation1 += Math.pow(meanDeviationArray1[n], 2);
+                            sumSquareDeviation2 += Math.pow(meanDeviationArray2[n], 2);
+                            denominator = Math.pow(sumSquareDeviation1 * sumSquareDeviation2, 1 / 2);
+                        }
+                        return Math.abs((numerator / denominator).toFixed(2));
                     }
-                    for (let j = array2.length - 1; j >= 0; j--) {
-                        sumArray2 += array2[j];
+                    // 声明一个可以把字符串类型的数组转化为数值类型的函数
+                    const changeToNumber = function (array) {
+                        return array.map(Number);
                     }
-                    averageArray1 = (sumArray1 / array1.length).toFixed(2);
-                    averageArray2 = (sumArray2 / array2.length).toFixed(2);
-                    for (let p = array1.length - 1; p >= 0; p--) {
-                        meanDeviationArray1.push(parseFloat((array1[p] - averageArray1).toFixed(2)));
+                    for (let i = 0; i < this.userInfo.length; i++) {
+                        // 当没有grade属性的时直接跳过
+                        if (this.userInfo[i].grade === undefined) {
+                            continue;
+                        }
+                        // 遍历并进行两两的皮尔逊相关系数计算
+                        else if (currentUserId === this.userInfo[i].user.id) {
+                            let currentUserGrade = this.userInfo[i].grade;
+                            for (let j = 0; j < this.userInfo.length; j++) {
+                                if (this.userInfo[j].grade != undefined && this.userInfo[j].user.id != currentUserId) {
+                                    let value = PearsonSimilarity(changeToNumber(this.userInfo[j].grade), changeToNumber(currentUserGrade));
+                                    pearsonArray.push({
+                                        "id": this.userInfo[j].user.id,
+                                        "value": value
+                                    });
+                                }
+                            }
+                            break;
+                        }
                     }
-                    for (let q = array1.length - 1; q >= 0; q--) {
-                        meanDeviationArray2.push(parseFloat((array2[q] - averageArray2).toFixed(2)));
-                    }
-                    for (let m = meanDeviationArray1.length - 1; m >= 0; m--) {
-                        numerator += meanDeviationArray1[m] * meanDeviationArray2[m];
-                    }
-                    for (let n = meanDeviationArray1.length - 1; n >= 0; n--) {
-                        sumSquareDeviation1 += Math.pow(meanDeviationArray1[n], 2);
-                        sumSquareDeviation2 += Math.pow(meanDeviationArray2[n], 2);
-                        denominator = Math.pow(sumSquareDeviation1 * sumSquareDeviation2, 1 / 2);
-                    }
-                    return Math.abs((numerator / denominator).toFixed(2));
-                }
-                // 声明一个可以把字符串类型的数组转化为数值类型的函数
-                const changeToNumber = function (array) {
-                    return array.map(Number);
-                }
-                for (let i = 0; i < this.userInfo.length; i++) {
-                    // 当没有grade属性的时直接跳过
-                    if (this.userInfo[i].grade === undefined) {
-                        continue;
-                    }
-                    // 遍历并进行两两的皮尔逊相关系数计算
-                    else if (currentUserId === this.userInfo[i].user.id) {
-                        let currentUserGrade = this.userInfo[i].grade;
-                        for (let j = 0; j < this.userInfo.length; j++) {
-                            if (this.userInfo[j].grade != undefined && this.userInfo[j].user.id != currentUserId) {
-                                let value = PearsonSimilarity(changeToNumber(this.userInfo[j].grade), changeToNumber(currentUserGrade));
-                                pearsonArray.push({
-                                    "id": this.userInfo[j].user.id,
-                                    "value": value
-                                });
+                    // 冒泡排序来把用户相似度降序排序
+                    for (let i = 0; i < pearsonArray.length; i++) {
+                        for (let j = 0; j < pearsonArray.length - 1 - i; j++) {
+                            if (Object.values(pearsonArray[j])[1] < Object.values(pearsonArray[j + 1])[1]) {
+                                let temp = pearsonArray[j];
+                                pearsonArray[j] = pearsonArray[j + 1];
+                                pearsonArray[j + 1] = temp;
                             }
                         }
-                        break;
                     }
-                }
-                // 冒泡排序来把用户相似度降序排序
-                for (let i = 0; i < pearsonArray.length; i++) {
-                    for (let j = 0; j < pearsonArray.length - 1 - i; j++) {
-                        if (Object.values(pearsonArray[j])[1] < Object.values(pearsonArray[j + 1])[1]) {
-                            let temp = pearsonArray[j];
-                            pearsonArray[j] = pearsonArray[j + 1];
-                            pearsonArray[j + 1] = temp;
+                    // 找到最相似的用户购物历史商品信息
+                    for (let i = 0; i < this.userInfo.length; i++) {
+                        if (this.userInfo[i].user.id === pearsonArray[0].id) {
+                            for (let j = 0; j < this.userInfo[i].history.length; j++) {
+                                allGood.push(this.userInfo[i].history[j].good);
+                            }
+                        }
+                    }
+                    // 在广场中找到这些商品并生成商品数组，遍历出来即可展示到推荐
+                    for (let i = 0; i < allGood.length; i++) {
+                        for (let j = 0; j < this.groudList.length; j++) {
+                            if (this.groudList[j].good === allGood[i]) {
+                                recommendList.push(this.groudList[j]);
+                                break;
+                            }
                         }
                     }
                 }
-                // 找到最相似的用户购物历史商品信息
-                for (let i = 0; i < this.userInfo.length; i++) {
-                    if (this.userInfo[i].user.id === pearsonArray[0].id) {
-                        for (let j = 0; j < this.userInfo[i].history.length; j++) {
-                            allGood.push(this.userInfo[i].history[j].good);
-                        }
-                    }
-                }
-                // 在广场中找到这些商品并生成商品数组，遍历出来即可展示到推荐
-                for (let i = 0; i < allGood.length; i++) {
-                    for (let j = 0; j < this.groudList.length; j++) {
-                        if (this.groudList[j].good === allGood[i]) {
-                            recommendList.push(this.groudList[j]);
-                            break;
+                // 如果是新用户，就用相同的标签进行推荐
+                else if (this.ifNewUser === true) {
+                    // 在广场数据中找到有类似标签的物品并推荐
+                    for (let i = 0; i < this.userTags.length; i++) {
+                        for (let j = 0; j < this.groudList.length; j++) {
+                            if (this.groudList[j].tags.includes(this.userTags[i])) {
+                                recommendList.push(this.groudList[j]);
+                            }
                         }
                     }
                 }
@@ -339,7 +356,7 @@
                 window.location.href = "./details.html";
                 sessionStorage.setItem("good", item.good);
             },
-            recommendGoToDetails: function(item){
+            recommendGoToDetails: function (item) {
                 window.location.href = "./details.html";
                 sessionStorage.setItem("good", item.good);
             }
@@ -358,7 +375,18 @@
             axios.get("http://localhost:5502/getUserInfo").then(res => {
                 this.userInfo = res.data;
                 console.log(this.userInfo);
-            })
+                let currentUserId = sessionStorage.getItem("id");
+                for (let i = this.userInfo.length - 1; i >= 0; i--) {
+                    if (this.userInfo[i].user.id === currentUserId) {
+                        this.userTags = this.userInfo[i].tags;
+                        if (this.userInfo[i].history === undefined || this.userInfo[i].shopcar === undefined) {
+                            this.ifNewUser = true;
+                        }
+                    }
+                }
+                console.log(this.userTags);
+                console.log(this.ifNewUser);
+            });
         }
     })
 </script>
