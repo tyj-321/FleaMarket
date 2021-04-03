@@ -191,7 +191,7 @@
             // 通过皮尔逊相关系数算法计算用户间的相似度，获得推荐列表
             recommendList: function () {
                 let recommendList = [];
-                // 如果不是新用户，就用皮尔逊相似度算法计算用户相似度进行推荐
+                // 如果不是新用户，就用皮尔逊相似度算法计算用户相似度和标签一起进行推荐
                 if (this.ifNewUser === false) {
                     // 这个对象数组包含最后所有的用户对应的皮尔逊相关系数
                     let pearsonArray = [];
@@ -293,6 +293,22 @@
                             }
                         }
                     }
+                    // 在广场数据中找到有类似标签的物品并推荐
+                    for (let i = 0; i < this.userTags.length; i++) {
+                        for (let j = 0; j < this.groudList.length; j++) {
+                            if (this.groudList[j].tags.includes(this.userTags[i])) {
+                                recommendList.push(this.groudList[j]);
+                            }
+                        }
+                    }
+                    // 过滤掉推荐数组中重复的部分
+                    for (let i = 0; i < recommendList.length-1; i++) {
+                        for (let j = i+1; j < recommendList.length; j++) {
+                            if (recommendList[i].good === recommendList[j].good) {
+                                recommendList.splice(j, 1);
+                            }
+                        }
+                    }
                 }
                 // 如果是新用户，就用相同的标签进行推荐
                 else if (this.ifNewUser === true) {
@@ -384,8 +400,6 @@
                         }
                     }
                 }
-                console.log(this.userTags);
-                console.log(this.ifNewUser);
             });
         }
     })
