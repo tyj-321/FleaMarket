@@ -284,20 +284,20 @@
                             }
                         }
                     }
+                    // 在广场数据中找到有类似标签的物品并推荐
+                    for (let i = 0; i < this.userTags.length; i++) {
+                        for (let j = 0; j < this.groudList.length; j++) {
+                            if (this.groudList[j].tags.includes(this.userTags[i])) {
+                                recommendList.push(this.groudList[j]);
+                            }
+                        }
+                    }
                     // 在广场中找到这些商品并生成商品数组，遍历出来即可展示到推荐
                     for (let i = 0; i < allGood.length; i++) {
                         for (let j = 0; j < this.groudList.length; j++) {
                             if (this.groudList[j].good === allGood[i]) {
                                 recommendList.push(this.groudList[j]);
                                 break;
-                            }
-                        }
-                    }
-                    // 在广场数据中找到有类似标签的物品并推荐
-                    for (let i = 0; i < this.userTags.length; i++) {
-                        for (let j = 0; j < this.groudList.length; j++) {
-                            if (this.groudList[j].tags.includes(this.userTags[i])) {
-                                recommendList.push(this.groudList[j]);
                             }
                         }
                     }
