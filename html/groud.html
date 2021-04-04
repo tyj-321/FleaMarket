@@ -162,7 +162,7 @@
                 <van-tabbar-item :icon="fleaIcon">跳蚤</van-tabbar-item>
                 <van-tabbar-item :icon="publishIcon" @click="goToPublish">发布</van-tabbar-item>
                 <van-tabbar-item :icon="shopcarIcon" @click="goToShopcar">购物车</van-tabbar-item>
-                <van-tabbar-item :icon="meIcon" @click="goToMe">我的</van-tabbar-item>
+                <van-tabbar-item :icon="meIcon" @click="goToMe" :dot="ifDot">我的</van-tabbar-item>
             </van-tabbar>
         </div>
     </div>
@@ -181,7 +181,8 @@
             groudList: [],
             userInfo: [],
             userTags: [],
-            ifNewUser: false
+            ifNewUser: false,
+            ifDot: false
         },
         computed: {
             // 模糊查询
@@ -254,8 +255,10 @@
                         // 遍历并进行两两的皮尔逊相关系数计算
                         else if (currentUserId === this.userInfo[i].user.id) {
                             let currentUserGrade = this.userInfo[i].grade;
+                            let currentUserGradeLength = this.userInfo[i].grade.length;
                             for (let j = 0; j < this.userInfo.length; j++) {
-                                if (this.userInfo[j].grade != undefined && this.userInfo[j].user.id != currentUserId) {
+                                // 评分不为空定义的其余用户，且数组长度相同
+                                if (this.userInfo[j].grade != undefined && this.userInfo[j].user.id != currentUserId && this.userInfo[j].grade.length === currentUserGradeLength) {
                                     let value = PearsonSimilarity(changeToNumber(this.userInfo[j].grade), changeToNumber(currentUserGrade));
                                     pearsonArray.push({
                                         "id": this.userInfo[j].user.id,
@@ -302,8 +305,8 @@
                         }
                     }
                     // 过滤掉推荐数组中重复的部分
-                    for (let i = 0; i < recommendList.length-1; i++) {
-                        for (let j = i+1; j < recommendList.length; j++) {
+                    for (let i = 0; i < recommendList.length - 1; i++) {
+                        for (let j = i + 1; j < recommendList.length; j++) {
                             if (recommendList[i].good === recommendList[j].good) {
                                 recommendList.splice(j, 1);
                             }
@@ -395,8 +398,19 @@
                 for (let i = this.userInfo.length - 1; i >= 0; i--) {
                     if (this.userInfo[i].user.id === currentUserId) {
                         this.userTags = this.userInfo[i].tags;
-                        if (this.userInfo[i].history === undefined || this.userInfo[i].shopcar === undefined) {
+                        // 判断是否是新用户
+                        if (this.userInfo[i].history === undefined || this.userInfo[i].shopcar === undefined || this.userInfo[i].history.length === 0 || this.userInfo[i].shopcar.length === 0) {
                             this.ifNewUser = true;
+                        }
+                        // 判断是否都已经评分
+                        if (this.userInfo[i].grade === undefined && this.userInfo[i].history != undefined) {
+                            this.ifDot = true;
+                        }
+                        if (this.userInfo[i].grade != undefined && this.userInfo[i].grade.length < this.userInfo[i].history.length) {
+                            this.ifDot = true;
+                        }
+                        if (this.userInfo[i].grade === undefined && this.userInfo[i].history.length === 0) {
+                            this.ifDot = false;
                         }
                     }
                 }

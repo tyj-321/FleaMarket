@@ -143,16 +143,6 @@
                                 sessionStorage.setItem("id", this.id);
                                 break;
                             }
-                            // else if (this.id != id || this.password != password) {
-                            //     this.idErrorMsg = "没有该用户账号";
-                            //     this.passwordErrorMsg = "密码错误";
-                            //     break;
-                            // }
-                            // else if () {
-                            //     this.passwordErrorMsg = "密码错误";
-                            //     break;
-                            // }
-                            // 当i等于0，说明已经核对到最后一条信息且没有对应正确的用户账号和密码，此时需要显示错误信息提示用户
                             else if (i === 0) {
                                 this.idErrorMsg = "没有该用户账号";
                                 this.passwordErrorMsg = "密码错误";

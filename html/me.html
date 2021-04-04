@@ -209,7 +209,7 @@
             <van-dialog v-model="ifGradeShow" title="评分" show-cancel-button @cancel="cancel" @confirm="confirm">
                 <van-rate v-model="scroe" allow-half />
             </van-dialog>
-            <div class="noHistory" v-else-if="history.length === 0 || history === undefined">
+            <div class="noHistory" v-if="history.length === 0">
                 <h2>无消费历史</h2>
                 <img src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fww4.sinaimg.cn%2Flarge%2F006APoFYjw1f8oc8dqnmvj308c08cglu.jpg&refer=http%3A%2F%2Fwww.sina.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1612342016&t=e885132148b41953dce1afc37f5871f9"
                     alt="这里什么也没有">
