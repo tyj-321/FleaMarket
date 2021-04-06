@@ -523,49 +523,55 @@
                 let rate = this.rate;
                 let headurl = "";
                 let name = "";
-                axios.get("http://localhost:5502/getUserInfo").then(res => {
-                    let userInfo = res.data;
-                    for (let i = res.data.length - 1; i >= 0; i--) {
-                        let id = userInfo[i].user.id;
-                        if (logonUserId === id) {
-                            headurl = userInfo[i].user.headurl;
-                            name = userInfo[i].user.name;
-                            break;
+                if (content === "") {
+                    vant.Toast('请留言!');
+                }
+                else {
+                    axios.get("http://localhost:5502/getUserInfo").then(res => {
+                        let userInfo = res.data;
+                        for (let i = res.data.length - 1; i >= 0; i--) {
+                            let id = userInfo[i].user.id;
+                            if (logonUserId === id) {
+                                headurl = userInfo[i].user.headurl;
+                                name = userInfo[i].user.name;
+                                break;
+                            }
                         }
-                    }
-                    let newComment = {
-                        name,
-                        headurl,
-                        content,
-                        rate
-                    };
-                    // 这里的this指向出现了变化，需要调整
-                    let that = this;
-                    axios.post("http://localhost:5502/commentUpdate", Qs.stringify({
-                        id: this.goodInfo._id,
-                        comment: newComment
-                    }))
-                        .then(function (response) {
-                            if (that.comment != undefined) {
-                                // 这里还应该同步到数据库
-                                that.comment.unshift(newComment);
-                                that.rate = "0";
-                                that.message = "";
-                                vant.Toast.success('发布成功！');
-                            }
-                            else {
-                                // 这里还应该同步到数据库
-                                that.comment = [newComment]
-                                that.rate = "0";
-                                that.message = "";
-                                vant.Toast.success('发布成功！');
-                            }
-                        })
-                        .catch(function (error) {
-                            vant.Toast.fail('发布失败！');
-                            console.log(error);
-                        });
-                });
+                        let newComment = {
+                            name,
+                            headurl,
+                            content,
+                            rate
+                        };
+                        // 这里的this指向出现了变化，需要调整
+                        let that = this;
+                        axios.post("http://localhost:5502/commentUpdate", Qs.stringify({
+                            id: this.goodInfo._id,
+                            comment: newComment
+                        }))
+                            .then(function (response) {
+                                if (that.comment != undefined) {
+                                    // 这里还应该同步到数据库
+                                    that.comment.unshift(newComment);
+                                    that.rate = "0";
+                                    that.message = "";
+                                    vant.Toast.success('发布成功！');
+                                }
+                                else {
+                                    // 这里还应该同步到数据库
+                                    that.comment = [newComment]
+                                    that.rate = "0";
+                                    that.message = "";
+                                    vant.Toast.success('发布成功！');
+                                }
+                            })
+                            .catch(function (error) {
+                                vant.Toast.fail('发布失败！');
+                                console.log(error);
+                            });
+                    });
+                }
+
             },
             // 加入购物车
             joinShopcar: function () {

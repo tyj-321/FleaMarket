@@ -399,7 +399,7 @@
                     if (this.userInfo[i].user.id === currentUserId) {
                         this.userTags = this.userInfo[i].tags;
                         // 判断是否是新用户
-                        if (this.userInfo[i].history === undefined || this.userInfo[i].shopcar === undefined || this.userInfo[i].history.length === 0 || this.userInfo[i].shopcar.length === 0) {
+                        if (this.userInfo[i].history === undefined || this.userInfo[i].shopcar === undefined || this.userInfo[i].history.length === 0 || this.userInfo[i].shopcar.length === 0 || this.userInfo[i].grade === undefined || this.userInfo[i].grade.length === 0) {
                             this.ifNewUser = true;
                         }
                         // 判断是否都已经评分
