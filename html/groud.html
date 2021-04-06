@@ -304,14 +304,6 @@
                             }
                         }
                     }
-                    // 过滤掉推荐数组中重复的部分
-                    for (let i = 0; i < recommendList.length - 1; i++) {
-                        for (let j = i + 1; j < recommendList.length; j++) {
-                            if (recommendList[i].good === recommendList[j].good) {
-                                recommendList.splice(j, 1);
-                            }
-                        }
-                    }
                 }
                 // 如果是新用户，就用相同的标签进行推荐
                 else if (this.ifNewUser === true) {
@@ -321,6 +313,14 @@
                             if (this.groudList[j].tags.includes(this.userTags[i])) {
                                 recommendList.push(this.groudList[j]);
                             }
+                        }
+                    }
+                }
+                // 过滤掉推荐数组中重复的部分
+                for (let i = 0; i < recommendList.length - 1; i++) {
+                    for (let j = i + 1; j < recommendList.length; j++) {
+                        if (recommendList[i].good === recommendList[j].good) {
+                            recommendList.splice(j, 1);
                         }
                     }
                 }
