@@ -86,7 +86,7 @@
         </div>
         <!-- 打标签组件 -->
         <div class="tags">
-            <van-picker show-toolbar title="选择标签" :columns="columns" @confirm="tagConfirm" @cancel="tagCancel"/>
+            <van-picker show-toolbar title="选择标签" :columns="columns" @confirm="tagConfirm" @cancel="tagCancel" />
         </div>
         <div class="footer">
             <van-tabbar v-model="tabActive" active-color="#DF5523" @change="tabChange">
@@ -208,7 +208,7 @@
                 else if (this.keyboardValue === "" || this.keyboardValue === "0.00") {
                     vant.Toast('价格不对！');
                 }
-                else if (this.tags.length === 0){
+                else if (this.tags.length === 0) {
                     vant.Toast("请选择标签！");
                 }
                 else {
@@ -241,6 +241,9 @@
                         let imgsrc = "../src/" + this.fileList[i].file.name;
                         imgurl.push(imgsrc);
                     }
+                    // 随机获取想要值和浏览值
+                    let want = parseInt(Math.random() * 1000);
+                    let browse = parseInt(Math.random() * 1000);
                     // 发布就同步到数据库
                     axios.post("http://localhost:5502/groudRegister", Qs.stringify({
                         publisher: {
@@ -252,9 +255,9 @@
                         good: this.good,
                         info: this.message,
                         prize: this.keyboardValue,
-                        want: "0",
+                        want: want,
                         time: time,
-                        browse: "0",
+                        browse: browse,
                         imgurl: imgurl,
                         city: "成都",
                         logistics: logistics,

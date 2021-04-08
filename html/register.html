@@ -161,6 +161,9 @@
                     vant.Toast("请选择标签！");
                 }
                 else {
+                    let support = parseInt(Math.random() * 100);
+                    let attention = parseInt(Math.random() * 100);
+                    let fan = parseInt(Math.random() * 100);
                     axios.post("http://localhost:5502/userRegister", Qs.stringify({
                         user: {
                             id: this.id,
@@ -169,9 +172,9 @@
                             phone: this.phone,
                             headurl: "http://pic.51yuansu.com/pic3/cover/01/69/80/595f67c2aff1e_610.jpg"
                         },
-                        support: "0",
-                        attention: "0",
-                        fan: "0",
+                        support: support,
+                        attention: attention,
+                        fan: fan,
                         city: "成都",
                         tags: this.tags
                     }))
