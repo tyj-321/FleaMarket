@@ -110,7 +110,7 @@
 
 <body>
     <div id="app">
-        <van-tabs v-model="headTabActive" animated sticky>
+        <van-tabs v-model="headTabActive" animated sticky @click="recommendStart">
             <van-tab title="广场">
                 <div class="search">
                     <van-search v-model="searchValue" placeholder="请输入搜索关键词" shape="round" />
@@ -182,149 +182,14 @@
             userInfo: [],
             userTags: [],
             ifNewUser: false,
-            ifDot: false
+            ifDot: false,
+            // 生成的推荐列表
+            recommendList: []
         },
         computed: {
             // 模糊查询
             vagueSearchList: function () {
                 return this.groudList.filter(item => item.good.includes(this.searchValue));
-            },
-            // 通过皮尔逊相关系数算法计算用户间的相似度，获得推荐列表
-            recommendList: function () {
-                let recommendList = [];
-                // 如果不是新用户，就用皮尔逊相似度算法计算用户相似度和标签一起进行推荐
-                if (this.ifNewUser === false) {
-                    // 这个对象数组包含最后所有的用户对应的皮尔逊相关系数
-                    let pearsonArray = [];
-                    // 声明一个数组来存储要推荐的商品名称
-                    let allGood = [];
-                    // 声明一个包含推荐商品所有信息的对象数组
-
-                    let currentUserId = sessionStorage.getItem("id");
-                    let gradeObj = {};
-                    let currentUser = {};
-                    // 声明一个皮尔逊相关计算函数
-                    const PearsonSimilarity = function (array1, array2) {
-                        // 两个数组的和
-                        let sumArray1 = 0;
-                        let sumArray2 = 0;
-                        // 两个数组的平均值
-                        let averageArray1 = 0;
-                        let averageArray2 = 0;
-                        // 两个数组的平均差数组
-                        let meanDeviationArray1 = [];
-                        let meanDeviationArray2 = [];
-                        let numerator = 0;                 //分子
-                        let denominator = 0;               //分母
-                        // 两个数组的平方差
-                        let sumSquareDeviation1 = 0;
-                        let sumSquareDeviation2 = 0;
-                        for (let i = array1.length - 1; i >= 0; i--) {
-                            sumArray1 += array1[i];
-                        }
-                        for (let j = array2.length - 1; j >= 0; j--) {
-                            sumArray2 += array2[j];
-                        }
-                        averageArray1 = (sumArray1 / array1.length).toFixed(2);
-                        averageArray2 = (sumArray2 / array2.length).toFixed(2);
-                        for (let p = array1.length - 1; p >= 0; p--) {
-                            meanDeviationArray1.push(parseFloat((array1[p] - averageArray1).toFixed(2)));
-                        }
-                        for (let q = array1.length - 1; q >= 0; q--) {
-                            meanDeviationArray2.push(parseFloat((array2[q] - averageArray2).toFixed(2)));
-                        }
-                        for (let m = meanDeviationArray1.length - 1; m >= 0; m--) {
-                            numerator += meanDeviationArray1[m] * meanDeviationArray2[m];
-                        }
-                        for (let n = meanDeviationArray1.length - 1; n >= 0; n--) {
-                            sumSquareDeviation1 += Math.pow(meanDeviationArray1[n], 2);
-                            sumSquareDeviation2 += Math.pow(meanDeviationArray2[n], 2);
-                            denominator = Math.pow(sumSquareDeviation1 * sumSquareDeviation2, 1 / 2);
-                        }
-                        return Math.abs((numerator / denominator).toFixed(2));
-                    }
-                    // 声明一个可以把字符串类型的数组转化为数值类型的函数
-                    const changeToNumber = function (array) {
-                        return array.map(Number);
-                    }
-                    for (let i = 0; i < this.userInfo.length; i++) {
-                        // 当没有grade属性的时直接跳过
-                        if (this.userInfo[i].grade === undefined) {
-                            continue;
-                        }
-                        // 遍历并进行两两的皮尔逊相关系数计算
-                        else if (currentUserId === this.userInfo[i].user.id) {
-                            let currentUserGrade = this.userInfo[i].grade;
-                            let currentUserGradeLength = this.userInfo[i].grade.length;
-                            for (let j = 0; j < this.userInfo.length; j++) {
-                                // 评分不为空定义的其余用户，且数组长度相同
-                                if (this.userInfo[j].grade != undefined && this.userInfo[j].user.id != currentUserId && this.userInfo[j].grade.length === currentUserGradeLength) {
-                                    let value = PearsonSimilarity(changeToNumber(this.userInfo[j].grade), changeToNumber(currentUserGrade));
-                                    pearsonArray.push({
-                                        "id": this.userInfo[j].user.id,
-                                        "value": value
-                                    });
-                                }
-                            }
-                            break;
-                        }
-                    }
-                    // 冒泡排序来把用户相似度降序排序
-                    for (let i = 0; i < pearsonArray.length; i++) {
-                        for (let j = 0; j < pearsonArray.length - 1 - i; j++) {
-                            if (Object.values(pearsonArray[j])[1] < Object.values(pearsonArray[j + 1])[1]) {
-                                let temp = pearsonArray[j];
-                                pearsonArray[j] = pearsonArray[j + 1];
-                                pearsonArray[j + 1] = temp;
-                            }
-                        }
-                    }
-                    // 找到最相似的用户购物历史商品信息
-                    for (let i = 0; i < this.userInfo.length; i++) {
-                        if (this.userInfo[i].user.id === pearsonArray[0].id) {
-                            for (let j = 0; j < this.userInfo[i].history.length; j++) {
-                                allGood.push(this.userInfo[i].history[j].good);
-                            }
-                        }
-                    }
-                    // 在广场数据中找到有类似标签的物品并推荐
-                    for (let i = 0; i < this.userTags.length; i++) {
-                        for (let j = 0; j < this.groudList.length; j++) {
-                            if (this.groudList[j].tags.includes(this.userTags[i])) {
-                                recommendList.push(this.groudList[j]);
-                            }
-                        }
-                    }
-                    // 在广场中找到这些商品并生成商品数组，遍历出来即可展示到推荐
-                    for (let i = 0; i < allGood.length; i++) {
-                        for (let j = 0; j < this.groudList.length; j++) {
-                            if (this.groudList[j].good === allGood[i]) {
-                                recommendList.push(this.groudList[j]);
-                                break;
-                            }
-                        }
-                    }
-                }
-                // 如果是新用户，就用相同的标签进行推荐
-                else if (this.ifNewUser === true) {
-                    // 在广场数据中找到有类似标签的物品并推荐
-                    for (let i = 0; i < this.userTags.length; i++) {
-                        for (let j = 0; j < this.groudList.length; j++) {
-                            if (this.groudList[j].tags.includes(this.userTags[i])) {
-                                recommendList.push(this.groudList[j]);
-                            }
-                        }
-                    }
-                }
-                // 过滤掉推荐数组中重复的部分
-                for (let i = 0; i < recommendList.length - 1; i++) {
-                    for (let j = i + 1; j < recommendList.length; j++) {
-                        if (recommendList[i].good === recommendList[j].good) {
-                            recommendList.splice(j, 1);
-                        }
-                    }
-                }
-                return recommendList;
             }
         },
         methods: {
@@ -378,6 +243,260 @@
             recommendGoToDetails: function (item) {
                 window.location.href = "./details.html";
                 sessionStorage.setItem("good", item.good);
+            },
+            // 点击推荐，就进行推荐计算
+            recommendStart: function (name) {
+                if (name === 1) {
+                    console.log(this.groudList);
+                    let recommendList = [];
+                    // 在这里进行K-means聚类机器学习，把每类的最高分的部分商品进行推荐
+                    // 初始化一些数据
+                    let k = 3;             //划分的类的数目
+                    let n = 10;            //最大迭代次数
+                    let centers = [];      //中心点数据数组
+                    let centerIndexs = []; //中心点数据下标数组
+                    let typeArray = [[], [], []];    //这个数组是包含类型数组的数组
+                    // 一个函数用于获取两个样本点数据之间的距离平方
+                    const getDistance = function (obj1, obj2) {
+                        let dis = Math.pow(Number(obj1.want) - Number(obj2.want), 2)
+                            + Math.pow(Number(obj1.prize) - Number(obj2.prize), 2)
+                            + Math.pow(Number(obj1.browse) - Number(obj2.browse), 2)
+                            + Math.pow(Number(obj1.comment[0].rate) - Number(obj2.comment[0].rate), 2);
+                        return dis;
+                    };
+                    // 声明一个函数用于获取距离最大的几个中心点，这里是3个中心点
+                    const getCenter = function (data) {
+                        // 在所有数据中随机选择三个中心点
+                        let firstIndex = parseInt(Math.random() * data.length);
+                        centers.push(data[firstIndex]);
+                        centerIndexs.push(firstIndex);
+
+                        let secondIndex = parseInt(Math.random() * data.length);
+                        if (secondIndex === firstIndex) {
+                            secondIndex = parseInt(Math.random() * data.length);
+                        }
+                        centers.push(data[secondIndex]);
+                        centerIndexs.push(secondIndex);
+
+                        let thirdIndex = parseInt(Math.random() * data.length);
+                        if (thirdIndex === firstIndex || thirdIndex === secondIndex) {
+                            thirdIndex = parseInt(Math.random() * data.length);
+                        }
+                        centers.push(data[thirdIndex]);
+                        centerIndexs.push(thirdIndex);
+                    }
+                    // 声明一个函数进行最小距离原则进行分配到最近聚类
+                    const allocate = function (data) {
+                        for (let i = 0; i < data.length; i++) {
+                            let dis = 99999999999999, type = -1;
+                            if (centerIndexs.indexOf(i) === -1) {
+                                for (let j = 0; j < k; j++) {
+                                    let tempDis = getDistance(data[i], data[centerIndexs[j]]);
+                                    if (tempDis < dis) {
+                                        dis = tempDis;
+                                        type = j;
+                                    }
+                                }
+                                typeArray[type].push(data[i]);
+                            }
+
+                        }
+                    }
+                    // 声明一个中心点更新函数，使用每个聚类的样本均值更新聚类中心
+                    const updataCenter = function (data) {
+                        if (centers.length === 3 || centerIndexs.length === 3) {
+                            centers = [];
+                            centerIndexs = [];
+                            let index = -1;
+                            let dis = 99999999999999999999;
+                            for (let i = 0; i < data.length; i++) {
+
+                                let tempDis = 0;
+                                for (let j = 0; j < data.length; j++) {
+                                    tempDis += getDistance(data[i], data[j]);
+                                }
+                                if (tempDis < dis) {
+                                    dis = tempDis;
+                                    index = i;
+                                }
+                            }
+                            centerIndexs.push(data[index].index);
+                            centers.push(data[index]);
+                        }
+                        else {
+                            let index = -1;
+                            let dis = 99999999999999999999;
+                            for (let i = 0; i < data.length; i++) {
+
+                                let tempDis = 0;
+                                for (let j = 0; j < data.length; j++) {
+                                    tempDis += getDistance(data[i], data[j]);
+                                }
+                                if (tempDis < dis) {
+                                    dis = tempDis;
+                                    index = i;
+                                }
+                            }
+                            centerIndexs.push(data[index].index);
+                            centers.push(data[index]);
+                        }
+
+                    }
+                    getCenter(this.groudList);
+                    allocate(this.groudList);
+                    console.log(centerIndexs, centers);
+                    console.log(typeArray);
+                    for (let i = 0; i < 10; i++) {
+                        for (let i = 0; i < typeArray.length; i++) {
+                            updataCenter(typeArray[i]);
+                        }
+                        allocate(this.groudList);
+                        console.log(centerIndexs, centers);
+                    }
+                    for (let i = 0; i < typeArray.length; i++) {
+                        for (let j = 0; j < 10; j++) {
+                            console.log(typeArray[i][j]);
+                            console.log(this.recommendList);
+                            recommendList.push(typeArray[i][j]);
+                        }
+                    }
+
+                    
+                    // 通过皮尔逊相关系数算法计算用户间的相似度，获得推荐列表
+                    // 如果不是新用户，就用皮尔逊相似度算法计算用户相似度和标签一起进行推荐
+                    if (this.ifNewUser === false) {
+                        // 这个对象数组包含最后所有的用户对应的皮尔逊相关系数
+                        let pearsonArray = [];
+                        // 声明一个数组来存储要推荐的商品名称
+                        let allGood = [];
+                        // 声明一个包含推荐商品所有信息的对象数组
+
+                        let currentUserId = sessionStorage.getItem("id");
+                        let gradeObj = {};
+                        let currentUser = {};
+                        // 声明一个皮尔逊相关计算函数
+                        const PearsonSimilarity = function (array1, array2) {
+                            // 两个数组的和
+                            let sumArray1 = 0;
+                            let sumArray2 = 0;
+                            // 两个数组的平均值
+                            let averageArray1 = 0;
+                            let averageArray2 = 0;
+                            // 两个数组的平均差数组
+                            let meanDeviationArray1 = [];
+                            let meanDeviationArray2 = [];
+                            let numerator = 0;                 //分子
+                            let denominator = 0;               //分母
+                            // 两个数组的平方差
+                            let sumSquareDeviation1 = 0;
+                            let sumSquareDeviation2 = 0;
+                            for (let i = array1.length - 1; i >= 0; i--) {
+                                sumArray1 += array1[i];
+                            }
+                            for (let j = array2.length - 1; j >= 0; j--) {
+                                sumArray2 += array2[j];
+                            }
+                            averageArray1 = (sumArray1 / array1.length).toFixed(2);
+                            averageArray2 = (sumArray2 / array2.length).toFixed(2);
+                            for (let p = array1.length - 1; p >= 0; p--) {
+                                meanDeviationArray1.push(parseFloat((array1[p] - averageArray1).toFixed(2)));
+                            }
+                            for (let q = array1.length - 1; q >= 0; q--) {
+                                meanDeviationArray2.push(parseFloat((array2[q] - averageArray2).toFixed(2)));
+                            }
+                            for (let m = meanDeviationArray1.length - 1; m >= 0; m--) {
+                                numerator += meanDeviationArray1[m] * meanDeviationArray2[m];
+                            }
+                            for (let n = meanDeviationArray1.length - 1; n >= 0; n--) {
+                                sumSquareDeviation1 += Math.pow(meanDeviationArray1[n], 2);
+                                sumSquareDeviation2 += Math.pow(meanDeviationArray2[n], 2);
+                                denominator = Math.pow(sumSquareDeviation1 * sumSquareDeviation2, 1 / 2);
+                            }
+                            return Math.abs((numerator / denominator).toFixed(2));
+                        }
+                        // 声明一个可以把字符串类型的数组转化为数值类型的函数
+                        const changeToNumber = function (array) {
+                            return array.map(Number);
+                        }
+                        for (let i = 0; i < this.userInfo.length; i++) {
+                            // 当没有grade属性的时直接跳过
+                            if (this.userInfo[i].grade === undefined) {
+                                continue;
+                            }
+                            // 遍历并进行两两的皮尔逊相关系数计算
+                            else if (currentUserId === this.userInfo[i].user.id) {
+                                let currentUserGrade = this.userInfo[i].grade;
+                                let currentUserGradeLength = this.userInfo[i].grade.length;
+                                for (let j = 0; j < this.userInfo.length; j++) {
+                                    // 评分不为空定义的其余用户，且数组长度相同
+                                    if (this.userInfo[j].grade != undefined && this.userInfo[j].user.id != currentUserId && this.userInfo[j].grade.length === currentUserGradeLength) {
+                                        let value = PearsonSimilarity(changeToNumber(this.userInfo[j].grade), changeToNumber(currentUserGrade));
+                                        pearsonArray.push({
+                                            "id": this.userInfo[j].user.id,
+                                            "value": value
+                                        });
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        // 冒泡排序来把用户相似度降序排序
+                        for (let i = 0; i < pearsonArray.length; i++) {
+                            for (let j = 0; j < pearsonArray.length - 1 - i; j++) {
+                                if (Object.values(pearsonArray[j])[1] < Object.values(pearsonArray[j + 1])[1]) {
+                                    let temp = pearsonArray[j];
+                                    pearsonArray[j] = pearsonArray[j + 1];
+                                    pearsonArray[j + 1] = temp;
+                                }
+                            }
+                        }
+                        // 找到最相似的用户购物历史商品信息
+                        for (let i = 0; i < this.userInfo.length; i++) {
+                            if (this.userInfo[i].user.id === pearsonArray[0].id) {
+                                for (let j = 0; j < this.userInfo[i].history.length; j++) {
+                                    allGood.push(this.userInfo[i].history[j].good);
+                                }
+                            }
+                        }
+                        // 在广场数据中找到有类似标签的物品并推荐
+                        for (let i = 0; i < this.userTags.length; i++) {
+                            for (let j = 0; j < this.groudList.length; j++) {
+                                if (this.groudList[j].tags.includes(this.userTags[i])) {
+                                    recommendList.push(this.groudList[j]);
+                                }
+                            }
+                        }
+                        // 在广场中找到这些商品并生成商品数组，遍历出来即可展示到推荐
+                        for (let i = 0; i < allGood.length; i++) {
+                            for (let j = 0; j < this.groudList.length; j++) {
+                                if (this.groudList[j].good === allGood[i]) {
+                                    recommendList.push(this.groudList[j]);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    // 如果是新用户，就用相同的标签进行推荐
+                    else if (this.ifNewUser === true) {
+                        // 在广场数据中找到有类似标签的物品并推荐
+                        for (let i = 0; i < this.userTags.length; i++) {
+                            for (let j = 0; j < this.groudList.length; j++) {
+                                if (this.groudList[j].tags.includes(this.userTags[i])) {
+                                    recommendList.push(this.groudList[j]);
+                                }
+                            }
+                        }
+                    }
+                    // 过滤掉推荐数组中重复的部分
+                    for (let i = 0; i < recommendList.length - 1; i++) {
+                        for (let j = i + 1; j < recommendList.length; j++) {
+                            if (recommendList[i].good === recommendList[j].good) {
+                                recommendList.splice(j, 1);
+                            }
+                        }
+                    }
+                    this.recommendList = recommendList;
+                }
             }
         },
         beforeMount: function () {
@@ -390,6 +509,9 @@
             axios.get("http://localhost:5502/getGroundInfo").then(res => {
                 vant.Toast.clear;
                 this.groudList = res.data.reverse();
+                for (let i = 0; i < this.groudList.length; i++) {
+                    this.groudList[i].index = i;
+                }
             });
             axios.get("http://localhost:5502/getUserInfo").then(res => {
                 this.userInfo = res.data;
