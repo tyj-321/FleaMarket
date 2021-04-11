@@ -264,7 +264,7 @@
                             + Math.pow(Number(obj1.prize) - Number(obj2.prize), 2)
                             + Math.pow(Number(obj1.browse) - Number(obj2.browse), 2)
                             + Math.pow(Number(obj1.comment[0].rate) - Number(obj2.comment[0].rate), 2);
-                        return dis;
+                        return Math.pow(dis, 1 / 2);
                     };
                     // 声明一个函数用于获取距离最大的几个中心点，这里是3个中心点
                     const getCenter = function (data) {
