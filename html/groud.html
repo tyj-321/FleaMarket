@@ -247,7 +247,9 @@
             // 点击推荐，就进行推荐计算
             recommendStart: function (name) {
                 if (name === 1) {
-                    console.log(this.groudList);
+                    vant.Toast.loading({
+                        message: '正在给你推荐...'
+                    });
                     let recommendList = [];
                     // 在这里进行K-means聚类机器学习，把每类的最高分的部分商品进行推荐
                     // 初始化一些数据
@@ -287,6 +289,9 @@
                     }
                     // 声明一个函数进行最小距离原则进行分配到最近聚类
                     const allocate = function (data) {
+                        if (typeArray[0].length > 0 || typeArray[1].length > 0 || typeArray[2].length > 0) {
+                            typeArray = [[], [], []];
+                        }
                         for (let i = 0; i < data.length; i++) {
                             let dis = 99999999999999, type = -1;
                             if (centerIndexs.indexOf(i) === -1) {
@@ -299,7 +304,6 @@
                                 }
                                 typeArray[type].push(data[i]);
                             }
-
                         }
                     }
                     // 声明一个中心点更新函数，使用每个聚类的样本均值更新聚类中心
@@ -307,61 +311,58 @@
                         if (centers.length === 3 || centerIndexs.length === 3) {
                             centers = [];
                             centerIndexs = [];
-                            let index = -1;
-                            let dis = 99999999999999999999;
-                            for (let i = 0; i < data.length; i++) {
-
-                                let tempDis = 0;
-                                for (let j = 0; j < data.length; j++) {
-                                    tempDis += getDistance(data[i], data[j]);
-                                }
-                                if (tempDis < dis) {
-                                    dis = tempDis;
-                                    index = i;
-                                }
-                            }
-                            centerIndexs.push(data[index].index);
-                            centers.push(data[index]);
                         }
-                        else {
-                            let index = -1;
-                            let dis = 99999999999999999999;
-                            for (let i = 0; i < data.length; i++) {
+                        let index = -1;
+                        let dis = 99999999999999999999;
+                        for (let i = 0; i < data.length; i++) {
 
-                                let tempDis = 0;
-                                for (let j = 0; j < data.length; j++) {
-                                    tempDis += getDistance(data[i], data[j]);
-                                }
-                                if (tempDis < dis) {
-                                    dis = tempDis;
-                                    index = i;
-                                }
+                            let tempDis = 0;
+                            for (let j = 0; j < data.length; j++) {
+                                tempDis += getDistance(data[i], data[j]);
                             }
-                            centerIndexs.push(data[index].index);
-                            centers.push(data[index]);
+                            if (tempDis < dis) {
+                                dis = tempDis;
+                                index = i;
+                            }
                         }
+                        centerIndexs.push(data[index].index);
+                        centers.push(data[index]);
 
                     }
                     getCenter(this.groudList);
                     allocate(this.groudList);
                     console.log(centerIndexs, centers);
                     console.log(typeArray);
+                    // 最多迭代10次，来更新中心点
                     for (let i = 0; i < 10; i++) {
                         for (let i = 0; i < typeArray.length; i++) {
                             updataCenter(typeArray[i]);
                         }
                         allocate(this.groudList);
                         console.log(centerIndexs, centers);
+                        console.log(typeArray);
                     }
+                    // 通过冒泡排序实现评分降序排列
+                    for (let k = 0; k < typeArray.length; k++) {
+                        for (let i = 0; i < typeArray[k].length; i++) {
+                            for (let j = 0; j < typeArray[k].length - 1 - i; j++) {
+                                if (typeArray[k][j].comment[0].rate < typeArray[k][j + 1].comment[0].rate) {
+                                    let tempRate = typeArray[k][j].comment[0].rate;
+                                    typeArray[k][j].comment[0].rate = typeArray[k][j + 1].comment[0].rate;
+                                    typeArray[k][j + 1].comment[0].rate = tempRate;
+                                }
+                            }
+                        }
+                    }
+                    console.log(recommendList);
+                    // 选择评分前十的商品进行推荐
                     for (let i = 0; i < typeArray.length; i++) {
                         for (let j = 0; j < 10; j++) {
-                            console.log(typeArray[i][j]);
-                            console.log(this.recommendList);
                             recommendList.push(typeArray[i][j]);
                         }
                     }
 
-                    
+
                     // 通过皮尔逊相关系数算法计算用户间的相似度，获得推荐列表
                     // 如果不是新用户，就用皮尔逊相似度算法计算用户相似度和标签一起进行推荐
                     if (this.ifNewUser === false) {
@@ -501,8 +502,7 @@
         },
         beforeMount: function () {
             vant.Toast.loading({
-                message: '加载中...',
-                forbidClick: true,
+                message: '加载中...'
             });
         },
         mounted: function () {
