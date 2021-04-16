@@ -253,11 +253,14 @@
                     let recommendList = [];
                     // 在这里进行K-means聚类机器学习，把每类的最高分的部分商品进行推荐
                     // 初始化一些数据
-                    let k = 3;             //划分的类的数目
+                    let k = parseInt(Math.random() * (6 - 2)) + 2;             //划分的类的数目
                     let n = 10;            //最大迭代次数
                     let centers = [];      //中心点数据数组
                     let centerIndexs = []; //中心点数据下标数组
-                    let typeArray = [[], [], []];    //这个数组是包含类型数组的数组
+                    let typeArray = [];    //这个数组是包含类型数组的数组
+                    for (i = 0; i < k; i++) {
+                        typeArray[i] = [];
+                    }
                     // 一个函数用于获取两个样本点数据之间的距离平方
                     const getDistance = function (obj1, obj2) {
                         let dis = Math.pow(Number(obj1.want) - Number(obj2.want), 2)
@@ -268,29 +271,44 @@
                     };
                     // 声明一个函数用于获取距离最大的几个中心点，这里是3个中心点
                     const getCenter = function (data) {
-                        // 在所有数据中随机选择三个中心点
-                        let firstIndex = parseInt(Math.random() * data.length);
-                        centers.push(data[firstIndex]);
-                        centerIndexs.push(firstIndex);
+                        // // 在所有数据中随机选择三个中心点
+                        // let firstIndex = parseInt(Math.random() * data.length);
+                        // centers.push(data[firstIndex]);
+                        // centerIndexs.push(firstIndex);
 
-                        let secondIndex = parseInt(Math.random() * data.length);
-                        if (secondIndex === firstIndex) {
-                            secondIndex = parseInt(Math.random() * data.length);
-                        }
-                        centers.push(data[secondIndex]);
-                        centerIndexs.push(secondIndex);
+                        // let secondIndex = parseInt(Math.random() * data.length);
+                        // if (secondIndex === firstIndex) {
+                        //     secondIndex = parseInt(Math.random() * data.length);
+                        // }
+                        // centers.push(data[secondIndex]);
+                        // centerIndexs.push(secondIndex);
 
-                        let thirdIndex = parseInt(Math.random() * data.length);
-                        if (thirdIndex === firstIndex || thirdIndex === secondIndex) {
-                            thirdIndex = parseInt(Math.random() * data.length);
+                        // let thirdIndex = parseInt(Math.random() * data.length);
+                        // if (thirdIndex === firstIndex || thirdIndex === secondIndex) {
+                        //     thirdIndex = parseInt(Math.random() * data.length);
+                        // }
+                        // centers.push(data[thirdIndex]);
+                        // centerIndexs.push(thirdIndex);
+                        // 在所有数据中随机选择出k个聚类中心点
+                        for (let i = 0; i < k; i++) {
+                            index = parseInt(Math.random() * data.length);
+                            if (centerIndexs.indexOf(index) === -1) {
+                                centers.push(data[index]);
+                                centerIndexs.push(index);
+                            }
+                            else {
+                                index = parseInt(Math.random() * data.length);
+                                centers.push(data[index]);
+                                centerIndexs.push(index);
+                            }
                         }
-                        centers.push(data[thirdIndex]);
-                        centerIndexs.push(thirdIndex);
                     }
                     // 声明一个函数进行最小距离原则进行分配到最近聚类
                     const allocate = function (data) {
-                        if (typeArray[0].length > 0 || typeArray[1].length > 0 || typeArray[2].length > 0) {
-                            typeArray = [[], [], []];
+                        if (typeArray[0].length > 0) {
+                            for (i = 0; i < k; i++) {
+                                typeArray[i] = [];
+                            }
                         }
                         for (let i = 0; i < data.length; i++) {
                             let dis = 99999999999999, type = -1;
@@ -308,7 +326,7 @@
                     }
                     // 声明一个中心点更新函数，使用每个聚类的样本均值更新聚类中心
                     const updataCenter = function (data) {
-                        if (centers.length === 3 || centerIndexs.length === 3) {
+                        if (centers.length === k || centerIndexs.length === k) {
                             centers = [];
                             centerIndexs = [];
                         }
@@ -357,7 +375,7 @@
                     console.log(recommendList);
                     // 选择评分前十的商品进行推荐
                     for (let i = 0; i < typeArray.length; i++) {
-                        for (let j = 0; j < 10; j++) {
+                        for (let j = 0; j < 5; j++) {
                             recommendList.push(typeArray[i][j]);
                         }
                     }
