@@ -5,49 +5,126 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>实验测试直接冒泡排序</title>
-    <!-- 引入Vue文件 -->
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6/dist/vue.min.js"></script>
-    <!-- 引入axios的JS文件 -->
-    <script src="../js/axios.min.js"></script>
+    <title>测试基于用户相似度的推荐匹配度</title>
 </head>
 
 <body>
-
+    <h1>测试基于用户相似度的推荐匹配度</h1>
 </body>
 <script>
-    // 先生成所需数据，来模拟推荐系统
+    // 初始化一些数据，模拟项目中的数据
     let data = [];
-    axios.get("../js/testdata.json").then(res => {
-        data = res.data.data;
-    })
-    for (let i = 0; i < 5000; i++) {
-        let prize = parseInt(Math.random() * 200);
-        let want = parseInt(Math.random() * 1000);
-        let browse = parseInt(Math.random() * 1000);
-        let grade = parseInt(Math.random() * 10);
+    for (let i = 0; i < 1000; i++) {
+        let grade = [];
+        let tags = [];
+        for (let j = 0; j < 10; j++) {
+            let rate = parseInt(Math.random() * 10) + 1;
+            grade.push(rate);
+        }
+        for (let k = 0; k < 2; k++) {
+            let tag = (parseInt(Math.random() * 5) + 1).toString();
+            tags.push(tag);
+        }
         let newObj = {
             index: i,
-            prize,
-            want,
-            browse,
-            grade
-        };
+            grade,
+            tags
+        }
         data.push(newObj);
     }
     console.log(data);
-    console.time("sort");
-        for (let i = 0; i < data.length; i++) {
-            for (let j = 0; j < data.length - 1 - i; j++) {
-                if (data[j].grade < data[j + 1].grade) {
-                    let tempRate = data[j].grade;
-                    data[j].grade = data[j + 1].grade;
-                    data[j + 1].grade = tempRate;
+    // 通过皮尔逊相关系数算法计算用户间的相似度，获得推荐列表
+    // 如果不是新用户，就用皮尔逊相似度算法计算用户相似度和标签一起进行推荐
+    let pearsonArray = [];
+    // 声明一个数组来存储要推荐的商品名称
+    let allGood = [];
+    // 声明一个包含推荐商品所有信息的对象数组
+    let gradeObj = {};
+    let currentUser = {};
+    let currentUserIndex = parseInt(Math.random() * data.length);
+    // 声明一个皮尔逊相关计算函数
+    const PearsonSimilarity = function (array1, array2) {
+        // 两个数组的和
+        let sumArray1 = 0;
+        let sumArray2 = 0;
+        // 两个数组的平均值
+        let averageArray1 = 0;
+        let averageArray2 = 0;
+        // 两个数组的平均差数组
+        let meanDeviationArray1 = [];
+        let meanDeviationArray2 = [];
+        let numerator = 0;                 //分子
+        let denominator = 0;               //分母
+        // 两个数组的平方差
+        let sumSquareDeviation1 = 0;
+        let sumSquareDeviation2 = 0;
+        for (let i = array1.length - 1; i >= 0; i--) {
+            sumArray1 += array1[i];
+        }
+        for (let j = array2.length - 1; j >= 0; j--) {
+            sumArray2 += array2[j];
+        }
+        averageArray1 = (sumArray1 / array1.length).toFixed(2);
+        averageArray2 = (sumArray2 / array2.length).toFixed(2);
+        for (let p = array1.length - 1; p >= 0; p--) {
+            meanDeviationArray1.push(parseFloat((array1[p] - averageArray1).toFixed(2)));
+        }
+        for (let q = array1.length - 1; q >= 0; q--) {
+            meanDeviationArray2.push(parseFloat((array2[q] - averageArray2).toFixed(2)));
+        }
+        for (let m = meanDeviationArray1.length - 1; m >= 0; m--) {
+            numerator += meanDeviationArray1[m] * meanDeviationArray2[m];
+        }
+        for (let n = meanDeviationArray1.length - 1; n >= 0; n--) {
+            sumSquareDeviation1 += Math.pow(meanDeviationArray1[n], 2);
+            sumSquareDeviation2 += Math.pow(meanDeviationArray2[n], 2);
+            denominator = Math.pow(sumSquareDeviation1 * sumSquareDeviation2, 1 / 2);
+        }
+        return Math.abs((numerator / denominator).toFixed(2));
+    }
+    // 遍历并进行两两的皮尔逊相关系数计算
+    for (let i = 0; i < data.length; i++) {
+        if (data[i].index === currentUserIndex) {
+            currentUser = data[i];
+            let currentUserGrade = data[i].grade;
+            for (let j = 0; j < data.length; j++) {
+                if (data[j].index != currentUserIndex) {
+                    let value = PearsonSimilarity(currentUserGrade, data[j].grade);
+                    pearsonArray.push({
+                        "index": data[j].index,
+                        "value": value
+                    });
                 }
             }
         }
-    console.timeEnd("sort");
+    }
+    console.log(currentUser);
+    // 冒泡排序来把用户相似度降序排序
+    for (let i = 0; i < pearsonArray.length; i++) {
+        for (let j = 0; j < pearsonArray.length - 1 - i; j++) {
+            if (Object.values(pearsonArray[j])[1] < Object.values(pearsonArray[j + 1])[1]) {
+                let temp = pearsonArray[j];
+                pearsonArray[j] = pearsonArray[j + 1];
+                pearsonArray[j + 1] = temp;
+            }
+        }
+    }
+    console.log(pearsonArray);
+    let rightCount = 0;
+    for (let i = 0; i < 200; i++) {
+        for (let j = 0; j < data.length; j++) {
+            if (data[j].index === pearsonArray[i].index) {
+                for (let k = 0; k < currentUser.tags.length; k++) {
+                    if (data[j].tags.indexOf(currentUser.tags[k]) != -1) {
+                        rightCount++;
+                    }
+                }
 
+            }
+        }
+    }
+    rightRate = rightCount / 200;
+    console.log(rightRate);
 </script>
 
 </html>
