@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实验测试聚类后排序</title>
+    <!-- 引入Vue文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6/dist/vue.min.js"></script>
+    <!-- 引入axios的JS文件 -->
+    <script src="../js/axios.min.js"></script>
+</head>
+
+<body>
+
+</body>
+<script>
+    // 先生成所需数据，来模拟推荐系统
+    let data = [];
+    axios.get("../js/testdata.json").then(res => {
+        data = res.data.data;
+    })
+    for (let i = 0; i < 5000; i++) {
+        let prize = parseInt(Math.random() * 200);
+        let want = parseInt(Math.random() * 1000);
+        let browse = parseInt(Math.random() * 1000);
+        let grade = parseInt(Math.random() * 10);
+        let newObj = {
+            index: i,
+            prize,
+            want,
+            browse,
+            grade
+        };
+        data.push(newObj);
+    }
+    console.log(data);
+    // 初始化一些数据
+    let k = 6;             //划分的类的数目
+    let n = 5;            //最大迭代次数
+    let centers = [];      //中心点数据数组
+    let centerIndexs = []; //中心点数据下标数组
+    let typeArray = [];    //这个数组是包含类型数组的数组
+    for (i = 0; i < k; i++) {
+        typeArray[i] = [];
+    }
+    // 一个函数用于获取两个样本点数据之间的距离平方
+    const getDistance = function (obj1, obj2) {
+        let dis = Math.pow(Number(obj1.want) - Number(obj2.want), 2)
+            + Math.pow(Number(obj1.prize) - Number(obj2.prize), 2)
+            + Math.pow(Number(obj1.browse) - Number(obj2.browse), 2)
+            + Math.pow(Number(obj1.grade) - Number(obj2.grade), 2);
+        return Math.pow(dis, 1 / 2);
+    };
+    // 声明一个函数用于获取距离最大的几个中心点，这里是3个中心点
+    const getCenter = function (data) {
+        // 随机出第一个聚类中心
+        let firstIndex = parseInt(Math.random() * data.length);
+        centers.push(data[firstIndex]);
+        centerIndexs.push(firstIndex);
+        // 第二个聚类中心是距离第一个中心最远的点
+        let dis = 0, index = -1;
+        for (let j = 0; j < data.length; j++) {
+            if (centerIndexs.indexOf(j) === -1) {
+                let tempDis = getDistance(data[j], data[centerIndexs[0]]);
+                if (tempDis > dis) {
+                    dis = tempDis;
+                    index = j;
+                }
+            }
+        }
+        centerIndexs.push(index);
+        centers.push(data[index]);
+        if (k >= 3) {
+            for (let i = 2; i < k; i++) {
+                let newIndex = parseInt(Math.random() * data.length);
+                centers.push(data[newIndex]);
+                centerIndexs.push(newIndex);
+            }
+        }
+    }
+    // 声明一个函数进行最小距离原则进行分配到最近聚类
+    const allocate = function (data) {
+        if (typeArray[0].length > 0) {
+            for (i = 0; i < k; i++) {
+                typeArray[i] = [];
+            }
+        }
+        for (let i = 0; i < data.length; i++) {
+            let dis = 99999999999999, type = -1;
+            if (centerIndexs.indexOf(i) === -1) {
+                for (let j = 0; j < k; j++) {
+                    let tempDis = getDistance(data[i], data[centerIndexs[j]]);
+                    if (tempDis < dis) {
+                        dis = tempDis;
+                        type = j;
+                    }
+                }
+                typeArray[type].push(data[i]);
+            }
+        }
+    }
+    // 声明一个中心点更新函数，使用每个聚类的样本均值更新聚类中心
+    const updataCenter = function (data) {
+        if (centers.length === k || centerIndexs.length === k) {
+            centers = [];
+            centerIndexs = [];
+        }
+        let index = -1;
+        let dis = 99999999999999999999;
+        for (let i = 0; i < data.length; i++) {
+            let tempDis = 0;
+            for (let j = 0; j < data.length; j++) {
+                tempDis += getDistance(data[i], data[j]);
+            }
+            if (tempDis < dis) {
+                dis = tempDis;
+                index = i;
+            }
+        }
+        centerIndexs.push(data[index].index);
+        centers.push(data[index]);
+
+    }
+    
+    getCenter(data);
+    allocate(data);
+    console.log(centerIndexs, centers);
+    console.log(typeArray);
+    // 最多迭代10次，来更新中心点
+    for (let i = 0; i < n; i++) {
+        for (let i = 0; i < typeArray.length; i++) {
+            updataCenter(typeArray[i]);
+        }
+        allocate(data);
+    }
+    const sortArray = function (array, index) {
+        for (let i = 0; i < typeArray[index].length; i++) {
+            for (let j = 0; j < typeArray[index].length - 1 - i; j++) {
+                if (typeArray[index][j].grade < typeArray[index][j + 1].grade) {
+                    let tempRate = typeArray[index][j].grade;
+                    typeArray[index][j].grade = typeArray[index][j + 1].grade;
+                    typeArray[index][j + 1].grade = tempRate;
+                }
+            }
+        }
+    }
+    console.time("sort");
+    let p0 = new Promise((resolve, reject) => {
+        sortArray(typeArray,0);
+        sortArray(typeArray,1);
+        sortArray(typeArray,2);
+        sortArray(typeArray,3);
+        sortArray(typeArray,4);
+        sortArray(typeArray,5);
+        {
+            if (typeArray.length > 0) {
+                resolve();
+                console.log("排序结束");
+                console.log(typeArray[0]);
+                console.log(centerIndexs[0]);
+            }
+            else {
+                reject();
+                console.log("排序失败");
+            }
+        }
+    });
+    console.timeEnd("sort");
+    console.log(centerIndexs, centers);
+    console.log(typeArray);
+
+</script>
+
+</html>

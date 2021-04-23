@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实验测试直接冒泡排序</title>
+    <!-- 引入Vue文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6/dist/vue.min.js"></script>
+    <!-- 引入axios的JS文件 -->
+    <script src="../js/axios.min.js"></script>
+</head>
+
+<body>
+
+</body>
+<script>
+    // 先生成所需数据，来模拟推荐系统
+    let data = [];
+    axios.get("../js/testdata.json").then(res => {
+        data = res.data.data;
+    })
+    for (let i = 0; i < 5000; i++) {
+        let prize = parseInt(Math.random() * 200);
+        let want = parseInt(Math.random() * 1000);
+        let browse = parseInt(Math.random() * 1000);
+        let grade = parseInt(Math.random() * 10);
+        let newObj = {
+            index: i,
+            prize,
+            want,
+            browse,
+            grade
+        };
+        data.push(newObj);
+    }
+    console.log(data);
+    console.time("sort");
+        for (let i = 0; i < data.length; i++) {
+            for (let j = 0; j < data.length - 1 - i; j++) {
+                if (data[j].grade < data[j + 1].grade) {
+                    let tempRate = data[j].grade;
+                    data[j].grade = data[j + 1].grade;
+                    data[j + 1].grade = tempRate;
+                }
+            }
+        }
+    console.timeEnd("sort");
+
+</script>
+
+</html>
