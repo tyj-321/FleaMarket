@@ -14,7 +14,7 @@
 <script>
     // 初始化一些数据，模拟项目中的数据
     let data = [];
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 3000; i++) {
         let grade = [];
         let tags = [];
         for (let j = 0; j < 10; j++) {
@@ -22,8 +22,20 @@
             grade.push(rate);
         }
         for (let k = 0; k < 2; k++) {
-            let tag = (parseInt(Math.random() * 5) + 1).toString();
-            tags.push(tag);
+            if (tags === []) {
+                let tag = (parseInt(Math.random() * 5) + 1).toString();
+                tags.push(tag);
+            }
+            else {
+                let tag = (parseInt(Math.random() * 5) + 1).toString();
+                if (tag != tags[0]) {
+                    tags.push(tag);
+                }
+                else {
+                    let tag = (parseInt(Math.random() * 5) + 1).toString();
+                    tags.push(tag);
+                }
+            }
         }
         let newObj = {
             index: i,
@@ -33,13 +45,11 @@
         data.push(newObj);
     }
     console.log(data);
-    // 通过皮尔逊相关系数算法计算用户间的相似度，获得推荐列表
-    // 如果不是新用户，就用皮尔逊相似度算法计算用户相似度和标签一起进行推荐
+    // 通过皮尔逊相关系数算法计算用户间的相似度
     let pearsonArray = [];
-    // 声明一个数组来存储要推荐的商品名称
-    let allGood = [];
-    // 声明一个包含推荐商品所有信息的对象数组
-    let gradeObj = {};
+    let cosineArray = [];
+    let jaccardArray = [];
+    let euclideanArray = [];
     let currentUser = {};
     let currentUserIndex = parseInt(Math.random() * data.length);
     // 声明一个皮尔逊相关计算函数
@@ -110,21 +120,203 @@
         }
     }
     console.log(pearsonArray);
-    let rightCount = 0;
-    for (let i = 0; i < 200; i++) {
+    let pRightCount = 0;
+    for (let i = 0; i < 500; i++) {
         for (let j = 0; j < data.length; j++) {
             if (data[j].index === pearsonArray[i].index) {
                 for (let k = 0; k < currentUser.tags.length; k++) {
                     if (data[j].tags.indexOf(currentUser.tags[k]) != -1) {
-                        rightCount++;
+                        pRightCount++;
                     }
                 }
 
             }
         }
     }
-    rightRate = rightCount / 200;
-    console.log(rightRate);
+    pRightRate = ((pRightCount / 500) * 100).toFixed(2);
+    console.log("皮尔逊相关度匹配度:" + pRightRate + "%");
+
+    // 声明一个函数，通过余弦来计算用户相似度
+    const Cosine = function (array1, array2) {
+        let numerator = 0;                 //分子
+        let denominator;               //分母
+        for (let i = 0; i < array1.length; i++) {
+            numerator += array1[i] * array2[i];
+        }
+        let mold1;
+        let mold2;
+        let powsum1 = 0;
+        let powsum2 = 0;
+        for (let i = 0; i < array1.length; i++) {
+            powsum1 += Math.pow(array1[i], 2);
+        }
+        for (let i = 0; i < array2.length; i++) {
+            powsum2 += Math.pow(array2[i], 2);
+        }
+        mold1 = Math.pow(powsum1, 1 / 2);
+        mold2 = Math.pow(powsum2, 1 / 2);
+        denominator = mold1 * mold2;
+        return Number((numerator / denominator).toFixed(2));
+    }
+    // 遍历并进行两两的余弦相关系数计算
+    for (let i = 0; i < data.length; i++) {
+        if (data[i].index === currentUserIndex) {
+            currentUser = data[i];
+            let currentUserGrade = data[i].grade;
+            for (let j = 0; j < data.length; j++) {
+                if (data[j].index != currentUserIndex) {
+                    let value = Cosine(currentUserGrade, data[j].grade);
+                    cosineArray.push({
+                        "index": data[j].index,
+                        "value": value
+                    });
+                }
+            }
+        }
+    }
+    // 冒泡排序来把用户相似度降序排序
+    for (let i = 0; i < cosineArray.length; i++) {
+        for (let j = 0; j < cosineArray.length - 1 - i; j++) {
+            if (Object.values(cosineArray[j])[1] < Object.values(cosineArray[j + 1])[1]) {
+                let temp = cosineArray[j];
+                cosineArray[j] = cosineArray[j + 1];
+                cosineArray[j + 1] = temp;
+            }
+        }
+    }
+    console.log(cosineArray);
+    let cRightCount = 0;
+    for (let i = 0; i < 500; i++) {
+        for (let j = 0; j < data.length; j++) {
+            if (data[j].index === cosineArray[i].index) {
+                for (let k = 0; k < currentUser.tags.length; k++) {
+                    if (data[j].tags.indexOf(currentUser.tags[k]) != -1) {
+                        cRightCount++;
+                    }
+                }
+
+            }
+        }
+    }
+    cRightRate = ((cRightCount / 500) * 100).toFixed(2);
+    console.log("余弦相关度匹配度:" + cRightRate + "%");
+
+    // 数组去重函数
+    const unique = function (arr) {
+        return Array.from(new Set(arr));
+    }
+    // 声明一个函数计算两个用户的Jaccard相似度
+    const Jaccard = function (array1, array2) {
+        let numerator = 0;                 //分子
+        let denominator;               //分母
+        newArray1 = unique(array1);
+        for (let i = 0; i < newArray1.length; i++) {
+            for (let j = 0; j < array2.length; j++) {
+                if (array1[i] === array2[j]) {
+                    numerator++;
+                    break;
+                }
+            }
+        }
+        let allArray = array1.concat(array2);
+        let arr = unique(allArray);
+        denominator = arr.length;
+        return Number((numerator / denominator).toFixed(2));
+    }
+    // 遍历并进行两两的Jaccard相关系数计算
+    for (let i = 0; i < data.length; i++) {
+        if (data[i].index === currentUserIndex) {
+            currentUser = data[i];
+            let currentUserGrade = data[i].grade;
+            for (let j = 0; j < data.length; j++) {
+                if (data[j].index != currentUserIndex) {
+                    let value = Jaccard(currentUserGrade, data[j].grade);
+                    jaccardArray.push({
+                        "index": data[j].index,
+                        "value": value
+                    });
+                }
+            }
+        }
+    }
+    // 冒泡排序来把用户相似度降序排序
+    for (let i = 0; i < jaccardArray.length; i++) {
+        for (let j = 0; j < jaccardArray.length - 1 - i; j++) {
+            if (Object.values(jaccardArray[j])[1] < Object.values(jaccardArray[j + 1])[1]) {
+                let temp = jaccardArray[j];
+                jaccardArray[j] = jaccardArray[j + 1];
+                jaccardArray[j + 1] = temp;
+            }
+        }
+    }
+    console.log(jaccardArray);
+    let jRightCount = 0;
+    for (let i = 0; i < 500; i++) {
+        for (let j = 0; j < data.length; j++) {
+            if (data[j].index === jaccardArray[i].index) {
+                for (let k = 0; k < currentUser.tags.length; k++) {
+                    if (data[j].tags.indexOf(currentUser.tags[k]) != -1) {
+                        jRightCount++;
+                    }
+                }
+
+            }
+        }
+    }
+    jRightRate = ((jRightCount / 500) * 100).toFixed(2);
+    console.log("jaccard相关度匹配度:" + jRightRate + "%");
+
+    // 声明一个函数通过计算欧式距离来计算用户相似度
+    const Euclidean = function (array1, array2) {
+        sum = 0;     //平方总和
+        for (let i = 0; i < array1.length; i++) {
+            sum += Math.pow(array1[i]-array2[i],2); 
+        }
+        let denominator = 1+Math.pow(sum,1/2);
+        return Number((1/denominator).toFixed(2));
+    }
+    // 遍历并进行两两的欧氏距离相关系数计算
+    for (let i = 0; i < data.length; i++) {
+        if (data[i].index === currentUserIndex) {
+            currentUser = data[i];
+            let currentUserGrade = data[i].grade;
+            for (let j = 0; j < data.length; j++) {
+                if (data[j].index != currentUserIndex) {
+                    let value = Euclidean(currentUserGrade, data[j].grade);
+                    euclideanArray.push({
+                        "index": data[j].index,
+                        "value": value
+                    });
+                }
+            }
+        }
+    }
+    // 冒泡排序来把用户相似度降序排序
+    for (let i = 0; i < euclideanArray.length; i++) {
+        for (let j = 0; j < euclideanArray.length - 1 - i; j++) {
+            if (Object.values(euclideanArray[j])[1] < Object.values(euclideanArray[j + 1])[1]) {
+                let temp = euclideanArray[j];
+                euclideanArray[j] = euclideanArray[j + 1];
+                euclideanArray[j + 1] = temp;
+            }
+        }
+    }
+    console.log(euclideanArray);
+    let eRightCount = 0;
+    for (let i = 0; i < 500; i++) {
+        for (let j = 0; j < data.length; j++) {
+            if (data[j].index === euclideanArray[i].index) {
+                for (let k = 0; k < currentUser.tags.length; k++) {
+                    if (data[j].tags.indexOf(currentUser.tags[k]) != -1) {
+                        eRightCount++;
+                    }
+                }
+
+            }
+        }
+    }
+    eRightRate = ((eRightCount / 500) * 100).toFixed(2);
+    console.log("欧氏距离相关度匹配度:" + eRightRate + "%");
 </script>
 
 </html>
