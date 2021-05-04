@@ -464,6 +464,7 @@
             cartName: "cart-o",
             cartIconColor: "#000",
             goodInfo: {},
+            goodInfoIndex: -1,
             comment: [],
             message: "",
             rate: "0",
@@ -581,12 +582,14 @@
                 let prize = this.goodInfo.prize;
                 let imgurl = this.goodInfo.imgurl[0];
                 let count = this.shopcarCount;
+                let index = this.goodInfoIndex;
                 let newShopcar = {
                     good,
                     info,
                     prize,
                     imgurl,
-                    count
+                    count,
+                    index
                 };
                 let that = this;
                 axios.post("http://localhost:5502/shopcarUpdate", Qs.stringify({
@@ -664,6 +667,8 @@
                 let good = sessionStorage.getItem("good");
                 for (let i = res.data.length - 1; i >= 0; i--) {
                     if (res.data[i].good === good) {
+                        console.log(i);
+                        this.goodInfoIndex = i;
                         this.goodInfo = res.data[i];
                         this.comment = res.data[i].comment.reverse();
                         console.log(this.goodInfo);

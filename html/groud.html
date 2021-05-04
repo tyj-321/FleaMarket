@@ -181,6 +181,7 @@
             groudList: [],
             userInfo: [],
             userTags: [],
+            userShopcar: [],
             ifNewUser: false,
             ifDot: false,
             // 生成的推荐列表
@@ -253,7 +254,15 @@
                     let recommendList = [];
                     // 在这里进行K-means聚类机器学习，把每类的最高分的部分商品进行推荐
                     // 初始化一些数据
-                    let k = parseInt(Math.random() * (6 - 2)) + 2;             //划分的类的数目
+                    // 如果购物车的商品不够分类，就随机分类
+                    let k = 0;             //划分的类的数目
+                    if (this.userShopcar === undefined || this.userShopcar.length === 1) {
+                        k = parseInt(Math.random() * (6 - 2)) + 2;             
+                    }
+                    // 如果购物车商品够分类，就按照购物车商品进行分类
+                    if (this.userShopcar.length >= 2) {
+                        k = this.userShopcar.length;
+                    }
                     let n = 10;            //最大迭代次数
                     let centers = [];      //中心点数据数组
                     let centerIndexs = []; //中心点数据下标数组
@@ -271,28 +280,41 @@
                     };
                     // 声明一个函数用于获取距离最大的几个中心点，这里是3个中心点
                     const getCenter = function (data) {
-                        // 随机出第一个聚类中心
-                        let firstIndex = parseInt(Math.random() * data.length);
-                        centers.push(data[firstIndex]);
-                        centerIndexs.push(firstIndex);
-                        // 第二个聚类中心是距离第一个中心最远的点
-                        let dis = 0, index = -1;
-                        for (let j = 0; j < data.length; j++) {
-                            if (centerIndexs.indexOf(j) === -1) {
-                                let tempDis = getDistance(data[j], data[centerIndexs[0]]);
-                                if (tempDis > dis) {
-                                    dis = tempDis;
-                                    index = j;
+                        if (this.userShopcar === undefined || this.userShopcar.length === 1) {
+                            // 随机出第一个聚类中心
+                            let firstIndex = parseInt(Math.random() * data.length);
+                            centers.push(data[firstIndex]);
+                            centerIndexs.push(firstIndex);
+                            // 第二个聚类中心是距离第一个中心最远的点
+                            let dis = 0, index = -1;
+                            for (let j = 0; j < data.length; j++) {
+                                if (centerIndexs.indexOf(j) === -1) {
+                                    let tempDis = getDistance(data[j], data[centerIndexs[0]]);
+                                    if (tempDis > dis) {
+                                        dis = tempDis;
+                                        index = j;
+                                    }
+                                }
+                            }
+                            centerIndexs.push(index);
+                            centers.push(data[index]);
+                            if (k >= 3) {
+                                for (let i = 2; i < k; i++) {
+                                    let newIndex = parseInt(Math.random() * data.length);
+                                    centers.push(data[newIndex]);
+                                    centerIndexs.push(newIndex);
                                 }
                             }
                         }
-                        centerIndexs.push(index);
-                        centers.push(data[index]);
-                        if (k >= 3) {
-                            for (let i = 2; i < k; i++) {
-                                let newIndex = parseInt(Math.random() * data.length);
-                                centers.push(data[newIndex]);
-                                centerIndexs.push(newIndex);
+                        else if (this.userShopcar.length >= 2) {
+                            for (let i = 0; i < data.length; i++) {
+                                for (let j = 0; j < k; j++) {
+                                    if(data[i].index === userShopcar[j].index){
+                                        centers.push(data[userShopcar[j].index]);
+                                        centerIndexs.push(userShopcar[j].index);
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
@@ -531,6 +553,7 @@
                 for (let i = this.userInfo.length - 1; i >= 0; i--) {
                     if (this.userInfo[i].user.id === currentUserId) {
                         this.userTags = this.userInfo[i].tags;
+                        this.userShopcar = this.userInfo[i].shopcar;
                         // 判断是否是新用户
                         if (this.userInfo[i].history === undefined || this.userInfo[i].shopcar === undefined || this.userInfo[i].history.length === 0 || this.userInfo[i].shopcar.length === 0 || this.userInfo[i].grade === undefined || this.userInfo[i].grade.length === 0) {
                             this.ifNewUser = true;

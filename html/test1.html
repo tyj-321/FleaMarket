@@ -52,6 +52,7 @@
     let euclideanArray = [];
     let currentUser = {};
     let currentUserIndex = parseInt(Math.random() * data.length);
+    console.time("皮尔逊时间消耗");
     // 声明一个皮尔逊相关计算函数
     const PearsonSimilarity = function (array1, array2) {
         // 两个数组的和
@@ -135,7 +136,9 @@
     }
     pRightRate = ((pRightCount / 500) * 100).toFixed(2);
     console.log("皮尔逊相关度匹配度:" + pRightRate + "%");
+    console.timeEnd("皮尔逊时间消耗");
 
+    console.time("余弦时间消耗");
     // 声明一个函数，通过余弦来计算用户相似度
     const Cosine = function (array1, array2) {
         let numerator = 0;                 //分子
@@ -200,11 +203,13 @@
     }
     cRightRate = ((cRightCount / 500) * 100).toFixed(2);
     console.log("余弦相关度匹配度:" + cRightRate + "%");
+    console.timeEnd("余弦时间消耗");
 
     // 数组去重函数
     const unique = function (arr) {
         return Array.from(new Set(arr));
     }
+    console.time("Jaccard时间消耗");
     // 声明一个函数计算两个用户的Jaccard相似度
     const Jaccard = function (array1, array2) {
         let numerator = 0;                 //分子
@@ -265,7 +270,9 @@
     }
     jRightRate = ((jRightCount / 500) * 100).toFixed(2);
     console.log("jaccard相关度匹配度:" + jRightRate + "%");
+    console.timeEnd("Jaccard时间消耗");
 
+    console.time("欧式距离时间消耗");
     // 声明一个函数通过计算欧式距离来计算用户相似度
     const Euclidean = function (array1, array2) {
         sum = 0;     //平方总和
@@ -317,6 +324,7 @@
     }
     eRightRate = ((eRightCount / 500) * 100).toFixed(2);
     console.log("欧氏距离相关度匹配度:" + eRightRate + "%");
+    console.timeEnd("欧式距离时间消耗");
 </script>
 
 </html>
